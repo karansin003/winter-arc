@@ -126,14 +126,40 @@ function isPerfect(day) {
   return state.habits.length > 0 && completedCount(day) === state.habits.length;
 }
 
-function isPastOrToday(day) {
+function currentActiveDay() {
   const today = todayKey();
-  // If user opens the app before the arc starts (e.g. Sep 30), allow Day 1 (Oct 01) to be interactive
   if (today < ARC_START) {
-    return day === ARC_START;
+    return ARC_START;
   }
-  return day <= today && day >= ARC_START;
+  if (today > ARC_END) {
+    return ARC_END;
+  }
+  return today;
 }
+
+function isDayEditable(day) {
+  // Strict Mode: Only the active running day can be modified before 12:00 AM midnight
+  return day === currentActiveDay();
+}
+
+function isDayPast(day) {
+  return day < currentActiveDay();
+}
+
+function isDayFuture(day) {
+  return day > currentActiveDay();
+}
+
+function getMidnightRemainingText() {
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+  const diffMs = Math.max(0, midnight.getTime() - now.getTime());
+  const hours = Math.floor(diffMs / (60 * 60 * 1000));
+  const minutes = Math.floor((diffMs % (60 * 60 * 1000)) / (60 * 1000));
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+  return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+}
+
 
 function dayPercent(day) {
   return state.habits.length ? Math.round((completedCount(day) / state.habits.length) * 100) : 0;
@@ -267,19 +293,22 @@ function renderToday() {
   const count = completedCount(date);
   const circumference = 2 * Math.PI * 35;
   const offset = circumference * (1 - percent / 100);
-  const canEdit = isPastOrToday(date);
-  const isActualToday = date === clampDate(todayKey());
+  const canEdit = isDayEditable(date);
+  const isPast = isDayPast(date);
+  const isFuture = isDayFuture(date);
+  const isActualToday = date === currentActiveDay();
   const dayNum = Math.max(1, Math.min(ARC_DAYS, Math.round((parseDate(date).getTime() - parseDate(ARC_START).getTime()) / DAY_MS) + 1));
   const habits = state.habits.length
     ? state.habits
         .map(habit => {
           const checked = (state.logs[date] || {})[habit.id] === true;
-          return `<label class="habit-row ${checked ? "done habit-done" : ""}">
+          return `<label class="habit-row ${checked ? "done habit-done" : ""} ${canEdit ? "" : "locked-row"}">
             <input class="habit-check" type="checkbox" data-habit-check="${escapeHtml(habit.id)}" ${checked ? "checked" : ""} ${canEdit ? "" : "disabled"}>
             <span class="habit-copy">
               <span class="habit-name">${escapeHtml(habit.name)}</span>
               <span class="habit-detail">${escapeHtml(habit.detail || "")}</span>
             </span>
+            ${!canEdit ? `<span style="font-size: 11px; color: var(--muted); margin-left: auto;">🔒 Locked</span>` : ""}
           </label>`;
         })
         .join("")
@@ -290,19 +319,52 @@ function renderToday() {
 
   return `<div class="content-heading">
       <div>
-        <p class="eyebrow">DAY ${dayNum} OF ${ARC_DAYS} · ${isActualToday ? "TODAY" : "DAY " + dayNum}</p>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+          <p class="eyebrow" style="margin: 0;">DAY ${dayNum} OF ${ARC_DAYS} · ${isActualToday ? "TODAY" : isPast ? "PAST DAY" : "UPCOMING"}</p>
+          <span class="strict-pill ${canEdit ? "" : isPast ? "locked" : "future"}">${canEdit ? "🔒 STRICT MODE" : isPast ? "🔒 LOCKED AT 12:00 AM" : "🔒 UPCOMING"}</span>
+          ${canEdit ? `<span class="midnight-timer" id="today-midnight-timer">⏳ Locks in ${getMidnightRemainingText()}</span>` : ""}
+        </div>
         <h2>${isActualToday ? "Today's rules & execution" : `Day ${dayNum} rules & execution`}</h2>
       </div>
       <div class="today-heading-actions">
+        ${canEdit ? `
+        <button type="button" class="save-today-btn" id="save-today-btn" data-action="save-today" title="Save today's progress to cloud">
+          <span>💾</span> <span id="save-btn-label">Save Progress</span>
+        </button>
+        ` : `
+        <button type="button" class="small-button accent-back-btn" data-action="return-today" title="Return to current active day">⚡ Return to Today</button>
+        `}
         <span class="date-label">${escapeHtml(getSelectedLabel())}</span>
-        ${!isActualToday ? `<button type="button" class="small-button accent-back-btn" data-action="return-today" title="Return to current day">Back to Today</button>` : ""}
       </div>
     </div>
+    ${isPast ? `
+    <div class="locked-banner past">
+      <div>
+        <strong>🔒 Past Day Locked in Strict Mode:</strong>
+        <span>Midnight (12:00 AM) has passed. Past checklist entries cannot be modified to ensure authentic discipline.</span>
+      </div>
+      <button type="button" class="small-button" data-action="return-today">Go to Today's Rules →</button>
+    </div>` : isFuture ? `
+    <div class="locked-banner future">
+      <div>
+        <strong>🔒 Upcoming Day Locked:</strong>
+        <span>This checklist will unlock automatically on ${escapeHtml(getSelectedLabel())} at 12:00 AM midnight.</span>
+      </div>
+      <button type="button" class="small-button" data-action="return-today">Go to Today's Rules →</button>
+    </div>` : ""}
     <div class="today-grid">
       <section class="panel panel-pad">
-        <p class="panel-kicker">NON-NEGOTIABLES · ${count}/${state.habits.length}</p>
-        <h3 class="panel-title">Keep the promises you made.</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <p class="panel-kicker" style="margin: 0;">NON-NEGOTIABLES · ${count}/${state.habits.length}</p>
+          ${canEdit ? `<span id="auto-save-tag" style="font: 10px var(--mono); color: var(--lime);">⚡ Auto-saved to Cloud</span>` : ""}
+        </div>
+        <h3 class="panel-title">${canEdit ? "Keep the promises you made." : "Execution record finalized."}</h3>
         <div class="habit-list">${habits}</div>
+        ${canEdit ? `
+        <div class="strict-lock-note">
+          <span>⏳ <strong>Auto-Locks at 12:00 AM:</strong> Cannot modify after midnight.</span>
+          <span style="color: var(--lime); cursor: pointer;" data-action="save-today">Save now →</span>
+        </div>` : ""}
       </section>
       <div class="side-stack">
         <section class="panel panel-pad progress-panel">
@@ -313,7 +375,7 @@ function renderToday() {
           </svg>
           <div class="progress-copy">
             <strong>${percent === 100 ? "A perfect day." : `${count} of ${state.habits.length} complete`}</strong>
-            <span>${canEdit ? "One checked promise at a time." : "Future day · checklist is locked."}</span>
+            <span>${canEdit ? "One checked promise at a time." : isPast ? "Locked at 12:00 AM · Record finalized." : "Future day · checklist is locked."}</span>
           </div>
         </section>
         <section class="panel panel-pad quote-panel">
@@ -335,15 +397,19 @@ function renderToday() {
 
 function renderCalendar() {
   const days = Array.from({ length: ARC_DAYS }, (_, index) => addDays(ARC_START, index));
-  const activeDayKey = clampDate(todayKey());
+  const activeDayKey = currentActiveDay();
   const cells = days
     .map((day, index) => {
       const done = completedCount(day);
-      const future = day > todayKey();
-      const status = isPerfect(day) ? "complete" : done ? "partial" : "";
+      const isPast = day < activeDayKey;
+      const isFuture = day > activeDayKey;
       const isCurrentDay = day === activeDayKey;
-      const label = `Day ${index + 1}, ${day}, ${isPerfect(day) ? "complete" : done ? `${dayPercent(day)} percent complete` : future ? "future" : "not started"}`;
-      return `<button type="button" class="calendar-day ${status} ${future ? "future" : ""} ${selectedDate === day ? "selected" : ""} ${isCurrentDay ? "today-cell" : ""}" data-select-day="${day}" aria-label="${label}" title="Click to open rules for Day ${index + 1} (${day})">${index + 1}</button>`;
+      const status = isPerfect(day) ? "complete" : done ? "partial" : "";
+      const label = `Day ${index + 1}, ${day}, ${isPerfect(day) ? "complete" : done ? `${dayPercent(day)} percent complete` : isPast ? "locked" : isFuture ? "future" : "active today"}`;
+      return `<button type="button" class="calendar-day ${status} ${isFuture ? "future" : ""} ${isPast ? "past-day" : ""} ${selectedDate === day ? "selected" : ""} ${isCurrentDay ? "today-cell" : ""}" data-select-day="${day}" aria-label="${label}" title="Day ${index + 1} (${day})${isPast ? ' · Locked at 12 AM' : isCurrentDay ? ' · Active Today' : ' · Future'}">
+        <span>${index + 1}</span>
+        ${isPast ? '<span class="day-lock-mark" aria-hidden="true">🔒</span>' : ""}
+      </button>`;
     })
     .join("");
 
@@ -352,26 +418,27 @@ function renderCalendar() {
         <p class="eyebrow">OCT 01 — DEC 31 · 92 DAYS</p>
         <h2>92-Day Execution Grid</h2>
       </div>
-      <span class="date-label">Click any day to open its rules & checklist</span>
+      <span class="date-label">Click any day to view rules · Past days locked at 12:00 AM</span>
     </div>
     <section class="panel panel-pad">
       <div class="calendar-grid">${cells}</div>
       <div class="calendar-legend">
         <span class="legend-item"><i class="legend-swatch complete"></i>All done</span>
         <span class="legend-item"><i class="legend-swatch partial"></i>Partially done</span>
-        <span class="legend-item"><i class="legend-swatch"></i>Not done / future</span>
+        <span class="legend-item"><i class="legend-swatch"></i>Not done</span>
         <span class="legend-item"><i class="legend-swatch" style="border: 1px solid var(--lime); box-shadow: 0 0 6px var(--lime);"></i>Current active day</span>
+        <span class="legend-item"><span style="font-size: 11px;">🔒</span> Past locked days</span>
       </div>
     </section>
     <section class="panel panel-pad selected-day">
       <div class="content-heading">
         <div>
-          <p class="panel-kicker">SELECTED DAY</p>
+          <p class="panel-kicker">SELECTED DAY ${selectedDate === activeDayKey ? "· ACTIVE TODAY" : selectedDate < activeDayKey ? "· LOCKED" : "· UPCOMING"}</p>
           <h2>${escapeHtml(getSelectedLabel())}</h2>
         </div>
-        <button class="small-button button-primary" type="button" data-action="open-today">Open Rules & Checklist →</button>
+        <button class="small-button button-primary" type="button" data-action="open-today">${selectedDate === activeDayKey ? "Open Today's Rules →" : "View Day Rules →"}</button>
       </div>
-      <p class="muted">${completedCount(selectedDate)} of ${state.habits.length} rules completed · ${dayPercent(selectedDate)}%</p>
+      <p class="muted">${completedCount(selectedDate)} of ${state.habits.length} rules completed · ${dayPercent(selectedDate)}% ${selectedDate < activeDayKey ? "· Finalized at 12:00 AM midnight" : selectedDate === activeDayKey ? "· Active until 12:00 AM midnight" : ""}</p>
     </section>`;
 }
 
@@ -410,17 +477,60 @@ function renderHabits() {
 
 function renderJournal() {
   const entry = state.journal[selectedDate] || "";
+  const canEdit = isDayEditable(selectedDate);
+  const isPast = isDayPast(selectedDate);
+  const isFuture = isDayFuture(selectedDate);
+  const isActualToday = selectedDate === currentActiveDay();
+  const dayNum = Math.max(1, Math.min(ARC_DAYS, Math.round((parseDate(selectedDate).getTime() - parseDate(ARC_START).getTime()) / DAY_MS) + 1));
+
+  let statusMsg = "";
+  if (canEdit) {
+    statusMsg = `⚡ Editable today · Auto-saves & permanently locks at 12:00 AM midnight.`;
+  } else if (isPast) {
+    statusMsg = `🔒 Locked in Strict Mode · Finalized at 12:00 AM midnight. Cannot be modified.`;
+  } else {
+    statusMsg = `🔒 Upcoming day · Journal is locked until 12:00 AM midnight on this day.`;
+  }
+
   return `<div class="content-heading">
       <div>
-        <p class="eyebrow">ONE LINE, NO FILTER</p>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+          <p class="eyebrow" style="margin: 0;">DAY ${dayNum} · ${isActualToday ? "TODAY" : isPast ? "PAST (LOCKED)" : "UPCOMING"}</p>
+          <span class="strict-pill ${canEdit ? "" : isPast ? "locked" : "future"}">${canEdit ? "🔒 STRICT MODE" : isPast ? "🔒 LOCKED AT 12:00 AM" : "🔒 UPCOMING"}</span>
+          ${canEdit ? `<span class="midnight-timer" id="today-midnight-timer">⏳ Locks in ${getMidnightRemainingText()}</span>` : ""}
+        </div>
         <h2>Daily reflection</h2>
       </div>
-      <span class="date-label">${escapeHtml(getSelectedLabel())}</span>
+      <div class="today-heading-actions">
+        ${canEdit ? `
+        <button type="button" class="save-today-btn" id="save-today-btn" data-action="save-today" title="Save today's progress to cloud">
+          <span>💾</span> <span id="save-btn-label">Save Progress</span>
+        </button>
+        ` : `
+        <button type="button" class="small-button accent-back-btn" data-action="return-today" title="Return to current active day">⚡ Return to Today</button>
+        `}
+        <span class="date-label">${escapeHtml(getSelectedLabel())}</span>
+      </div>
     </div>
+    ${isPast ? `
+    <div class="locked-banner past">
+      <div>
+        <strong>🔒 Past Day Journal Locked:</strong>
+        <span>This reflection was finalized at 12:00 AM midnight in Strict Mode to preserve honesty and discipline.</span>
+      </div>
+      <button type="button" class="small-button" data-action="return-today">Go to Today's Rules →</button>
+    </div>` : isFuture ? `
+    <div class="locked-banner future">
+      <div>
+        <strong>🔒 Upcoming Day Journal:</strong>
+        <span>This reflection will unlock automatically on ${escapeHtml(getSelectedLabel())} at 12:00 AM.</span>
+      </div>
+      <button type="button" class="small-button" data-action="return-today">Go to Today's Rules →</button>
+    </div>` : ""}
     <section class="panel panel-pad">
       <label class="panel-kicker" for="journal-entry">WHAT WAS YOUR WIN TODAY?</label>
-      <textarea id="journal-entry" class="journal-input" maxlength="280" placeholder="One win. One lesson. One honest sentence." ${isPastOrToday(selectedDate) ? "" : "disabled"}>${escapeHtml(entry)}</textarea>
-      <div id="journal-status" class="journal-status">${isPastOrToday(selectedDate) ? "Saved privately to your account." : "Future day · journal is locked."}</div>
+      <textarea id="journal-entry" class="journal-input" maxlength="280" placeholder="${canEdit ? "One win. One lesson. One honest sentence." : "No journal entry recorded for this day."}" ${canEdit ? "" : "disabled"}>${escapeHtml(entry)}</textarea>
+      <div id="journal-status" class="journal-status">${statusMsg}</div>
     </section>
     <p class="muted">Your journal is private to your signed-in account and synced to your Firebase profile.</p>`;
 }
@@ -442,6 +552,26 @@ function render() {
   }[activeTab]();
 }
 
+async function saveImmediately() {
+  if (!user) return false;
+  try {
+    localStorage.setItem(localCacheKey(), JSON.stringify(state));
+  } catch {}
+
+  window.clearTimeout(saveTimer);
+  try {
+    await setDoc(doc(db, "users", user.uid, "winterArc", "state"), {
+      state,
+      updatedAt: serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error("Save error:", error);
+    showMessage(`Save failed: ${error.message}`, true);
+    return false;
+  }
+}
+
 function cacheAndSync() {
   if (!user) return;
   try {
@@ -450,6 +580,9 @@ function cacheAndSync() {
     showMessage("Browser storage is unavailable.", true);
   }
 
+  const autoTag = document.querySelector("#auto-save-tag");
+  if (autoTag) autoTag.textContent = "⚡ Saving...";
+
   window.clearTimeout(saveTimer);
   saveTimer = window.setTimeout(async () => {
     try {
@@ -457,8 +590,12 @@ function cacheAndSync() {
         state,
         updatedAt: serverTimestamp()
       });
+      const tag = document.querySelector("#auto-save-tag");
+      if (tag) tag.textContent = "⚡ Auto-saved to Cloud";
     } catch (error) {
       showMessage(`Cloud save failed: ${error.message}`, true);
+      const tag = document.querySelector("#auto-save-tag");
+      if (tag) tag.textContent = "⚠️ Cloud save failed";
     }
   }, 350);
 }
@@ -796,16 +933,21 @@ document.querySelectorAll(".tab").forEach(tab =>
   tab.addEventListener("click", () => {
     activeTab = tab.dataset.tab;
     if (activeTab === "today") {
-      selectedDate = clampDate(todayKey());
+      selectedDate = currentActiveDay();
     }
     render();
   })
 );
 
-// Habit checklist interaction
+// Habit checklist interaction with Strict Mode guard
 content.addEventListener("change", event => {
   const checkbox = event.target.closest("[data-habit-check]");
-  if (!checkbox || !isPastOrToday(selectedDate)) return;
+  if (!checkbox) return;
+  if (!isDayEditable(selectedDate)) {
+    checkbox.checked = !checkbox.checked;
+    showMessage("🔒 Strict Mode: Past and future days cannot be modified!", true);
+    return;
+  }
   state.logs[selectedDate] ||= {};
   state.logs[selectedDate][checkbox.dataset.habitCheck] = checkbox.checked;
   cacheAndSync();
@@ -835,9 +977,30 @@ content.addEventListener("click", async event => {
   }
 
   if (action.dataset.action === "return-today") {
-    selectedDate = clampDate(todayKey());
+    selectedDate = currentActiveDay();
+    activeTab = "today";
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (action.dataset.action === "save-today") {
+    const btn = document.querySelector("#save-today-btn");
+    const label = document.querySelector("#save-btn-label");
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = "Saving...";
+
+    const ok = await saveImmediately();
+    if (btn) btn.disabled = false;
+    if (ok) {
+      if (btn) btn.classList.add("saved");
+      if (label) label.textContent = "✓ Saved to Cloud";
+      showMessage("✓ Today's progress saved & cloud-synced!");
+      window.setTimeout(() => {
+        if (btn) btn.classList.remove("saved");
+        if (label) label.textContent = "Save Progress";
+      }, 2500);
+    }
     return;
   }
 
@@ -877,10 +1040,13 @@ content.addEventListener("submit", async event => {
   render();
 });
 
-// Journal auto-save
+// Journal auto-save with Strict Mode guard
 content.addEventListener("input", event => {
   if (event.target.id !== "journal-entry") return;
-  if (!isPastOrToday(selectedDate)) return;
+  if (!isDayEditable(selectedDate)) {
+    showMessage("🔒 Strict Mode: Past entries are locked and cannot be edited.", true);
+    return;
+  }
   state.journal[selectedDate] = event.target.value;
   const status = document.querySelector("#journal-status");
   if (status) status.textContent = "Saving...";
@@ -888,9 +1054,35 @@ content.addEventListener("input", event => {
   window.clearTimeout(event.target.saveLabelTimer);
   event.target.saveLabelTimer = window.setTimeout(() => {
     const currentStatus = document.querySelector("#journal-status");
-    if (currentStatus) currentStatus.textContent = "Saved privately to your account.";
+    if (currentStatus) currentStatus.textContent = "Saved privately to your account (Auto-lock at 12:00 AM).";
   }, 500);
 });
+
+// Midnight rollover monitor & strict lock enforcement
+let lastTrackedDate = todayKey();
+
+function checkMidnightRollover() {
+  const timerEl = document.querySelector("#today-midnight-timer");
+  if (timerEl) {
+    timerEl.textContent = `⏳ Locks in ${getMidnightRemainingText()}`;
+  }
+
+  const currentDate = todayKey();
+  if (currentDate !== lastTrackedDate) {
+    console.log(`[Strict Mode] Midnight rollover: ${lastTrackedDate} -> ${currentDate}`);
+    lastTrackedDate = currentDate;
+
+    // 12:00 AM midnight reached! Auto-save today's progress immediately
+    saveImmediately().then(() => {
+      showMessage("🔒 Midnight reached! Previous day locked in Strict Mode. New day is now active!");
+      selectedDate = currentActiveDay();
+      activeTab = "today";
+      render();
+      updateProfileUI();
+      updateCountdown();
+    });
+  }
+}
 
 // Firebase init & auth state observer
 if (!firebaseReady()) {
@@ -927,11 +1119,13 @@ if (!firebaseReady()) {
 
     authView.hidden = true;
     appView.hidden = false;
-    selectedDate = clampDate(todayKey());
+    selectedDate = currentActiveDay();
+    activeTab = "today";
     startUserData(user);
     updateCountdown();
     updateProfileUI();
   });
 
   window.setInterval(updateCountdown, 60_000);
+  window.setInterval(checkMidnightRollover, 1000);
 }
