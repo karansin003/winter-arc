@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "winter-arc-b7f5f"
-  }
+  },
+  "targets": {
+    "winter-arc-b7f5f": {
+      "hosting": {
+        "arc-challenge": [
+          "arc-challenge"
+        ],
+        "winter-arc": [
+          "winter-arc-b7f5f"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

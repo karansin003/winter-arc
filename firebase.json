@@ -1,24 +1,50 @@
 {
-  "hosting": {
-    "public": ".",
-    "cleanUrls": true,
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "README.md",
-      "firestore.rules",
-      "public/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/forgot",
-        "destination": "/forgot.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "site": "arc-challenge",
+      "public": ".",
+      "cleanUrls": true,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "README.md",
+        "firestore.rules",
+        "public/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/forgot",
+          "destination": "/forgot.html"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "site": "winter-arc-b7f5f",
+      "public": ".",
+      "cleanUrls": true,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "README.md",
+        "firestore.rules",
+        "public/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/forgot",
+          "destination": "/forgot.html"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
 }
