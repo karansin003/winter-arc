@@ -1,3 +1,2 @@
 # Google AdSense ads.txt for arc-challenge.web.app
-# Replace pub-XXXXXXXXXXXXXXXX with your real AdSense Publisher ID (e.g. pub-1234567890123456)
-google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-6097963574439559, DIRECT, f08c47fec0942fa0
