@@ -764,19 +764,17 @@ document.querySelector("#auth-switch").addEventListener("click", () => {
   updateAuthMode();
 });
 
-document.querySelector("#reset-password").addEventListener("click", async () => {
-  const email = (authForm.email?.value || "").trim();
-  if (!auth || !email) {
-    authMessage.textContent = "Enter your email first, then request a reset link.";
-    return;
-  }
-  try {
-    await sendPasswordResetEmail(auth, email);
-    authMessage.textContent = `Password reset email sent to ${email}.`;
-  } catch (error) {
-    authMessage.textContent = friendlyAuthError(error);
-  }
-});
+const resetPasswordLink = document.querySelector("#reset-password");
+if (resetPasswordLink) {
+  resetPasswordLink.addEventListener("click", (e) => {
+    const email = (authForm.email?.value || "").trim();
+    if (email) {
+      e.preventDefault();
+      window.location.href = `forgot.html?email=${encodeURIComponent(email)}`;
+    }
+    // If empty, normal <a href="forgot.html"> navigation takes over seamlessly
+  });
+}
 
 document.querySelector("#sign-out").addEventListener("click", async () => {
   try {
