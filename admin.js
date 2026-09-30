@@ -91,6 +91,21 @@ function showDashboard(adminUser) {
   startRealtimeListeners();
 }
 
+// Password Visibility Toggle
+const adminPasswordInput = document.querySelector("#admin-password");
+const adminTogglePasswordBtn = document.querySelector("#admin-toggle-password");
+
+if (adminTogglePasswordBtn && adminPasswordInput) {
+  adminTogglePasswordBtn.addEventListener("click", () => {
+    const isPassword = adminPasswordInput.type === "password";
+    adminPasswordInput.type = isPassword ? "text" : "password";
+    adminTogglePasswordBtn.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+    adminTogglePasswordBtn.title = isPassword ? "Hide password" : "Show password";
+    const slash = adminTogglePasswordBtn.querySelector(".eye-slash");
+    if (slash) slash.style.display = isPassword ? "block" : "none";
+  });
+}
+
 // Login Handler
 if (loginForm) {
   loginForm.addEventListener("submit", async e => {
