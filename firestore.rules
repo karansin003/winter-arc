@@ -1,8 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'karansin8672@gmail.com';
+    }
+
+    // Individual user documents, subcollections (winterArc state, profile, notifications)
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Global User Directory for Admin monitoring
+    match /directory_users/{userId} {
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Support Requests & Inquiries
+    match /support_requests/{requestId} {
+      allow create: if true;
+      allow read: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
   }
 }

@@ -1,4 +1,6 @@
 User-agent: *
+Disallow: /admin
+Disallow: /admin.html
 Allow: /
 
 User-agent: Mediapartners-Google

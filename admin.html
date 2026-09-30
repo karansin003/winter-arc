@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Command Center · Winter Arc (Ghost Mode)</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0c0d0e">
+
+  <!-- Google AdSense Verification Tag -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6097963574439559"
+    crossorigin="anonymous"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261001-8">
+
+  <style>
+    /* Admin Scoped Dashboard Styling */
+    .admin-body {
+      background: #0c0d0e;
+      color: var(--paper);
+      min-height: 100vh;
+      font-family: var(--sans);
+    }
+
+    .admin-header {
+      background: #141812;
+      border-bottom: 1px solid rgba(213, 255, 84, 0.25);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .admin-brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--lime);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+    }
+
+    .admin-brand-text h1 {
+      font: 700 15px var(--sans);
+      letter-spacing: .08em;
+      color: var(--paper);
+      margin: 0;
+    }
+
+    .admin-brand-text span {
+      font: 11px var(--mono);
+      color: var(--lime);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .admin-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(213, 255, 84, 0.1);
+      border: 1px solid rgba(213, 255, 84, 0.3);
+      border-radius: 20px;
+      font: 11px var(--mono);
+      color: var(--lime);
+    }
+
+    .admin-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 8px var(--lime);
+      animation: pulse-dot 1.8s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .admin-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-user-pill {
+      font: 11px var(--mono);
+      color: #c0c8b8;
+      background: var(--panel);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+    }
+
+    .admin-user-pill strong {
+      color: var(--lime);
+    }
+
+    .admin-main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+
+    /* Metric Cards */
+    .admin-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .admin-metric-card {
+      background: #141812;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: all .2s ease;
+    }
+
+    .admin-metric-card:hover {
+      border-color: rgba(213, 255, 84, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .admin-metric-label {
+      font: 11px var(--mono);
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-metric-value {
+      font: 800 28px var(--sans);
+      color: var(--paper);
+    }
+
+    .admin-metric-value.highlight-lime {
+      color: var(--lime);
+    }
+
+    .admin-metric-value.highlight-orange {
+      color: #ff9f0a;
+    }
+
+    /* Navigation Tabs */
+    .admin-tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .admin-tab-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font: 700 13px var(--mono);
+      letter-spacing: .05em;
+      padding: 10px 18px;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .18s ease;
+      position: relative;
+    }
+
+    .admin-tab-btn:hover {
+      color: var(--paper);
+    }
+
+    .admin-tab-btn.active {
+      color: var(--lime);
+      border-bottom: 2px solid var(--lime);
+      background: rgba(213, 255, 84, 0.05);
+    }
+
+    .admin-count-badge {
+      background: rgba(213, 255, 84, 0.2);
+      color: var(--lime);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .admin-count-badge.alert {
+      background: #ff3b30;
+      color: #fff;
+    }
+
+    /* Filter & Controls Bar */
+    .admin-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      background: #141812;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .admin-search-input {
+      background: #0c0d0e;
+      border: 1px solid var(--line);
+      color: var(--paper);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font: 12px var(--mono);
+      min-width: 260px;
+    }
+
+    .admin-search-input:focus {
+      outline: none;
+      border-color: var(--lime);
+    }
+
+    .admin-filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .admin-filter-btn {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font: 11px var(--mono);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+
+    .admin-filter-btn:hover {
+      color: var(--paper);
+      border-color: rgba(213, 255, 84, 0.3);
+    }
+
+    .admin-filter-btn.active {
+      background: rgba(213, 255, 84, 0.15);
+      border-color: var(--lime);
+      color: var(--lime);
+      font-weight: 700;
+    }
+
+    /* Request Cards */
+    .admin-request-card {
+      background: #141812;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all .2s ease;
+    }
+
+    .admin-request-card:hover {
+      border-color: rgba(213, 255, 84, 0.3);
+    }
+
+    .admin-request-card.pending {
+      border-left: 4px solid #ff9f0a;
+    }
+
+    .admin-request-card.replied {
+      border-left: 4px solid var(--lime);
+    }
+
+    .admin-request-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .admin-request-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(213, 255, 84, 0.15);
+      color: var(--lime);
+      display: grid;
+      place-items: center;
+      font: 700 13px var(--mono);
+    }
+
+    .admin-req-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--paper);
+    }
+
+    .admin-req-email {
+      font: 11px var(--mono);
+      color: var(--muted);
+    }
+
+    .admin-status-badge {
+      font: 700 10px var(--mono);
+      letter-spacing: .06em;
+      padding: 4px 10px;
+      border-radius: 14px;
+      text-transform: uppercase;
+    }
+
+    .admin-status-badge.pending {
+      background: rgba(255, 159, 10, 0.15);
+      border: 1px solid #ff9f0a;
+      color: #ff9f0a;
+    }
+
+    .admin-status-badge.replied {
+      background: rgba(213, 255, 84, 0.15);
+      border: 1px solid var(--lime);
+      color: var(--lime);
+    }
+
+    .admin-request-category {
+      display: inline-block;
+      font: 11px var(--mono);
+      color: var(--lime);
+      background: rgba(213, 255, 84, 0.08);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .admin-request-body {
+      background: #0c0d0e;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e0e8d8;
+      margin-bottom: 16px;
+      white-space: pre-line;
+    }
+
+    .admin-reply-box {
+      background: rgba(213, 255, 84, 0.04);
+      border: 1px solid rgba(213, 255, 84, 0.25);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-top: 14px;
+    }
+
+    .admin-reply-header {
+      font: 700 11px var(--mono);
+      color: var(--lime);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-reply-text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #e8f0e0;
+      white-space: pre-line;
+    }
+
+    /* Reply Form */
+    .admin-reply-form {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .admin-templates-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .admin-template-btn {
+      font: 10px var(--mono);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+
+    .admin-template-btn:hover {
+      background: rgba(213, 255, 84, 0.1);
+      color: var(--lime);
+      border-color: var(--lime);
+    }
+
+    .admin-reply-textarea {
+      width: 100%;
+      background: #0c0d0e;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px 14px;
+      color: var(--paper);
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 10px;
+    }
+
+    .admin-reply-textarea:focus {
+      outline: none;
+      border-color: var(--lime);
+    }
+
+    .admin-send-btn {
+      background: var(--lime);
+      color: var(--ink);
+      font: 700 12px var(--mono);
+      letter-spacing: .06em;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .15s ease;
+    }
+
+    .admin-send-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(213, 255, 84, 0.35);
+    }
+
+    .admin-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Users Table */
+    .admin-table-container {
+      background: #141812;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .admin-table th {
+      background: #0c0d0e;
+      color: var(--muted);
+      font: 700 11px var(--mono);
+      letter-spacing: .05em;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-transform: uppercase;
+    }
+
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e0e8d8;
+    }
+
+    .admin-table tr:hover td {
+      background: rgba(213, 255, 84, 0.03);
+    }
+
+    /* Auth Gate */
+    .admin-gate-wrap {
+      max-width: 440px;
+      margin: 80px auto;
+      padding: 32px 28px;
+      background: #141812;
+      border: 1px solid rgba(213, 255, 84, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      text-align: center;
+    }
+
+    .admin-gate-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: rgba(213, 255, 84, 0.15);
+      color: var(--lime);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 16px;
+      font-size: 26px;
+    }
+
+    .admin-gate-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--paper);
+      margin-bottom: 8px;
+    }
+
+    .admin-gate-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+
+<body class="admin-body">
+
+  <!-- ADMIN AUTH GATE (Shown if not logged in as karansin8672@gmail.com) -->
+  <div id="admin-auth-gate" class="admin-gate-wrap" style="display: none;">
+    <div class="admin-gate-icon">🔒</div>
+    <h2 class="admin-gate-title">Admin Command Center</h2>
+    <p class="admin-gate-desc">Restricted Access. Super-Admin credentials (<code>karansin8672@gmail.com</code>) required to inspect users and reply to inquiries.</p>
+
+    <form id="admin-login-form" style="text-align: left;">
+      <div style="margin-bottom: 14px;">
+        <label style="font: 11px var(--mono); color: var(--muted); display: block; margin-bottom: 6px;">ADMIN EMAIL</label>
+        <input type="email" id="admin-email" value="karansin8672@gmail.com" readonly
+          style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--lime); padding: 10px 14px; border-radius: 6px; font: 12px var(--mono);">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="font: 11px var(--mono); color: var(--muted); display: block; margin-bottom: 6px;">PASSWORD</label>
+        <input type="password" id="admin-password" placeholder="Enter admin password" required
+          style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--paper); padding: 10px 14px; border-radius: 6px; font-size: 14px;">
+      </div>
+      <button type="submit" id="admin-login-btn" class="button button-primary" style="width: 100%; justify-content: center;">
+        Unlock Command Center →
+      </button>
+      <div id="admin-login-msg" style="margin-top: 14px; font-size: 12px; color: #ff3b30; text-align: center;"></div>
+    </form>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <a href="/" style="font: 11px var(--mono); color: var(--muted); text-decoration: none;">← Return to Main Site</a>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATED ADMIN DASHBOARD -->
+  <div id="admin-dashboard" style="display: none;">
+    <!-- Top Header -->
+    <header class="admin-header">
+      <a href="/admin" class="admin-brand">
+        <div class="admin-brand-icon">W</div>
+        <div class="admin-brand-text">
+          <h1>WINTER ARC // ADMIN</h1>
+          <span>
+            <span class="admin-live-dot"></span>
+            Cloud Firestore Live Sync
+          </span>
+        </div>
+      </a>
+
+      <div class="admin-tools">
+        <div class="admin-user-pill">
+          Super Admin: <strong>karansin8672@gmail.com</strong>
+        </div>
+        <button id="admin-refresh-btn" type="button" class="small-button" title="Refresh all records">
+          🔄 Refresh
+        </button>
+        <a href="/" class="small-button" style="text-decoration: none;">
+          ⚡ Main App
+        </a>
+        <button id="admin-signout-btn" type="button" class="small-button danger">
+          Sign Out
+        </button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <!-- High-Level Metric KPIs -->
+      <section class="admin-metrics-grid">
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">
+            <span>👥 Registered Users</span>
+            <span>All Time</span>
+          </div>
+          <div id="metric-users-count" class="admin-metric-value highlight-lime">--</div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">
+            <span>📩 Support Requests</span>
+            <span>Total Tickets</span>
+          </div>
+          <div id="metric-requests-count" class="admin-metric-value">--</div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">
+            <span>⏳ Pending Replies</span>
+            <span>Needs Action</span>
+          </div>
+          <div id="metric-pending-count" class="admin-metric-value highlight-orange">--</div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="admin-metric-label">
+            <span>🔥 Active Streaks</span>
+            <span>Global Arc</span>
+          </div>
+          <div id="metric-streaks-count" class="admin-metric-value">--</div>
+        </div>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <nav class="admin-tabs" aria-label="Admin Sections">
+        <button class="admin-tab-btn active" data-tab="inquiries" type="button">
+          <span>📩 Support Inquiries & Requests</span>
+          <span id="tab-inquiries-badge" class="admin-count-badge alert" style="display: none;">0</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="users" type="button">
+          <span>👥 User Directory</span>
+          <span id="tab-users-badge" class="admin-count-badge">0</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="broadcast" type="button">
+          <span>📢 Direct Web Notification</span>
+        </button>
+      </nav>
+
+      <!-- TAB 1: SUPPORT INQUIRIES & REPLIES -->
+      <section id="section-inquiries">
+        <div class="admin-controls-bar">
+          <input type="text" id="inquiries-search" class="admin-search-input"
+            placeholder="🔍 Search inquiries by user, email, message...">
+
+          <div class="admin-filter-group">
+            <button class="admin-filter-btn active" data-filter="all" type="button">All (<span id="count-filter-all">0</span>)</button>
+            <button class="admin-filter-btn" data-filter="pending" type="button">🔴 Pending (<span id="count-filter-pending">0</span>)</button>
+            <button class="admin-filter-btn" data-filter="replied" type="button">🟢 Replied (<span id="count-filter-replied">0</span>)</button>
+          </div>
+        </div>
+
+        <div id="inquiries-list">
+          <div style="padding: 40px; text-align: center; color: var(--muted); font: 12px var(--mono);">
+            Loading inquiries from Firestore...
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: USER DIRECTORY -->
+      <section id="section-users" style="display: none;">
+        <div class="admin-controls-bar">
+          <input type="text" id="users-search" class="admin-search-input"
+            placeholder="🔍 Search users by alias, email, UID...">
+          <div style="font: 11px var(--mono); color: var(--muted);">
+            Active participants registered in directory
+          </div>
+        </div>
+
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Ghost Alias / User</th>
+                <th>Email</th>
+                <th>Current Streak</th>
+                <th>Days Logged</th>
+                <th>Last Active</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 32px; color: var(--muted);">
+                  Loading registered users...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: BROADCAST NOTIFICATION -->
+      <section id="section-broadcast" style="display: none;">
+        <div style="max-width: 680px; background: #141812; border: 1px solid var(--line); border-radius: 10px; padding: 24px;">
+          <h3 style="margin-bottom: 6px; color: var(--lime); font-size: 16px;">📢 Send Webpage Notification to User</h3>
+          <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+            This sends a real-time notification that appears instantly as an alert and popover message inside the user's webpage dashboard.
+          </p>
+
+          <form id="broadcast-form">
+            <div style="margin-bottom: 16px;">
+              <label style="font: 11px var(--mono); color: var(--muted); display: block; margin-bottom: 6px;">RECIPIENT</label>
+              <select id="broadcast-recipient" style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--paper); padding: 10px 14px; border-radius: 6px; font-size: 13px;">
+                <option value="ALL">🌐 Broadcast to ALL Registered Users</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="font: 11px var(--mono); color: var(--muted); display: block; margin-bottom: 6px;">NOTIFICATION TITLE</label>
+              <input type="text" id="broadcast-title" placeholder="e.g. Official Update: Challenge Grid Milestone" required
+                style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--paper); padding: 10px 14px; border-radius: 6px; font-size: 13px;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="font: 11px var(--mono); color: var(--muted); display: block; margin-bottom: 6px;">MESSAGE DETAILS</label>
+              <textarea id="broadcast-message" placeholder="Type notification message here..." required rows="4"
+                style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--paper); padding: 12px 14px; border-radius: 6px; font-size: 13px; font-family: inherit; resize: vertical;"></textarea>
+            </div>
+
+            <button type="submit" id="broadcast-submit-btn" class="button button-primary">
+              🚀 Dispatch Notification to Webpage
+            </button>
+            <div id="broadcast-status" style="margin-top: 12px;"></div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Real-Time Floating Web Toast -->
+  <div id="web-toast-container" class="web-toast-container" aria-live="polite"></div>
+
+  <script src="site.js"></script>
+  <script type="module" src="admin.js?v=20261001-1"></script>
+</body>
+
+</html>

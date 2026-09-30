@@ -226,9 +226,23 @@
   </main>
 
   <script src="site.js"></script>
-  <script>
-    // Client-side Contact Form Handler with Validation and Honeypot
-    document.getElementById('contact-form')?.addEventListener('submit', function (e) {
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import {
+      addDoc,
+      collection,
+      getFirestore,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Client-side Contact Form Handler with Cloud Firestore & Direct Email
+    document.getElementById('contact-form')?.addEventListener('submit', async function (e) {
       e.preventDefault();
       const statusBox = document.getElementById('contact-status');
       const submitBtn = document.getElementById('contact-submit');
@@ -236,7 +250,6 @@
 
       // Check anti-spam honeypot
       if (formData.get('website_trap_field')) {
-        // Silently drop bot submission
         statusBox.innerHTML = '<div class="recovery-success">Message received. Thank you!</div>';
         return;
       }
@@ -252,16 +265,31 @@
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Transmitting...';
+      submitBtn.textContent = 'Transmitting to Admin...';
+
+      // 1. Log ticket into Cloud Firestore so it appears in Admin Command Center instantly
+      try {
+        await addDoc(collection(db, "support_requests"), {
+          userId: auth.currentUser ? auth.currentUser.uid : null,
+          userName: name,
+          userEmail: email,
+          category: subject,
+          message: message,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+      } catch (err) {
+        console.warn("Could not save to support_requests in Firestore:", err);
+      }
 
       const mailtoUrl = `mailto:karansin8672@gmail.com?subject=${encodeURIComponent('[Winter Arc Support] ' + subject + ' - ' + name)}&body=${encodeURIComponent('From: ' + name + ' (' + email + ')\nCategory: ' + subject + '\n\nMessage:\n' + message)}`;
 
-      // Confirm submission and launch direct email client to admin inbox
+      // 2. Confirm submission and launch direct email client to admin inbox
       setTimeout(() => {
         statusBox.innerHTML = `
           <div class="recovery-success" style="padding: 16px 20px; border-radius: 6px; line-height: 1.6; background: rgba(213,255,84,0.08); border: 1px solid var(--lime);">
-            <strong style="color: var(--lime); font-size: 14px;">✓ Inquiry Prepared for Admin!</strong><br>
-            Thank you, <strong>${name}</strong>. Your inquiry regarding <em>"${subject}"</em> is ready.<br>
+            <strong style="color: var(--lime); font-size: 14px;">✓ Inquiry Dispatched to Admin!</strong><br>
+            Thank you, <strong>${name}</strong>. Your inquiry regarding <em>"${subject}"</em> has been logged in the Admin Command Center.<br>
             <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
               <a href="${mailtoUrl}" class="button button-primary" style="padding: 8px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                 <span>✉️</span> Open Email & Send Directly to Admin →

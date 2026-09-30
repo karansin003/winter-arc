@@ -11,11 +11,18 @@ import {
   updateProfile
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {
+  addDoc,
+  collection,
   doc,
+  getDocs,
   getFirestore,
   onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
-  setDoc
+  setDoc,
+  updateDoc,
+  where
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -65,6 +72,9 @@ let user = null;
 let userProfile = null;
 let unsubscribeState = null;
 let unsubscribeProfile = null;
+let unsubscribeNotifications = null;
+let knownNotificationIds = new Set();
+let hasInitializedNotifications = false;
 let saveTimer;
 let authMode = "signin";
 let activeTab = "today";
@@ -619,6 +629,7 @@ function cacheAndSync() {
         state,
         updatedAt: serverTimestamp()
       });
+      updateDirectoryUser(user);
       const tag = document.querySelector("#auto-save-tag");
       if (tag) tag.textContent = "⚡ Auto-saved to Cloud";
     } catch (error) {
@@ -632,6 +643,19 @@ function cacheAndSync() {
 function startUserData(currentUser) {
   if (unsubscribeState) unsubscribeState();
   if (unsubscribeProfile) unsubscribeProfile();
+  if (unsubscribeNotifications) unsubscribeNotifications();
+
+  // 1. Sync Directory user record for Admin monitoring
+  updateDirectoryUser(currentUser);
+
+  // 2. Real-time Notifications from Admin
+  startNotifications(currentUser);
+
+  // 3. Admin Command Center button visibility
+  const adminHeaderLink = document.querySelector("#admin-header-link");
+  if (adminHeaderLink) {
+    adminHeaderLink.hidden = !(currentUser.email && currentUser.email.toLowerCase() === "karansin8672@gmail.com");
+  }
 
   const cacheKey = `winter-arc:${currentUser.uid}`;
   const profileCacheKey = `winter-arc-profile:${currentUser.uid}`;
@@ -857,6 +881,217 @@ if (profileDialog) {
   });
 }
 
+// ==========================================================================
+// User Notifications & Real-Time Admin Alerts
+// ==========================================================================
+const notificationTrigger = document.querySelector("#notification-trigger");
+const notificationPopover = document.querySelector("#notification-popover");
+const notificationBadge = document.querySelector("#notification-badge");
+const notificationList = document.querySelector("#notification-list");
+const markAllReadBtn = document.querySelector("#mark-all-read-btn");
+
+function toggleNotificationPopover() {
+  if (!notificationPopover) return;
+  notificationPopover.hidden = !notificationPopover.hidden;
+  if (!notificationPopover.hidden && profileDialog && profileDialog.open) {
+    profileDialog.close();
+  }
+}
+
+if (notificationTrigger) {
+  notificationTrigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleNotificationPopover();
+  });
+}
+
+document.addEventListener("click", (e) => {
+  if (notificationPopover && !notificationPopover.hidden) {
+    if (!notificationPopover.contains(e.target) && !notificationTrigger?.contains(e.target)) {
+      notificationPopover.hidden = true;
+    }
+  }
+});
+
+if (markAllReadBtn) {
+  markAllReadBtn.addEventListener("click", async () => {
+    if (!user) return;
+    try {
+      const notifRef = collection(db, "users", user.uid, "notifications");
+      const unreadSnap = await getDocs(query(notifRef, where("read", "==", false)));
+      const promises = [];
+      unreadSnap.forEach(d => {
+        promises.push(updateDoc(d.ref, { read: true }));
+      });
+      await Promise.all(promises);
+    } catch (err) {
+      console.warn("Could not mark all notifications read:", err);
+    }
+  });
+}
+
+function showWebToast(title, message) {
+  const container = document.querySelector("#web-toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = "web-toast";
+  toast.innerHTML = `
+    <div class="toast-icon">⚡</div>
+    <div class="toast-content">
+      <div class="toast-title">${escapeHtml(title)}</div>
+      <div class="toast-body">${escapeHtml(message)}</div>
+    </div>
+    <button class="toast-close" type="button" aria-label="Close notification">&times;</button>
+  `;
+
+  toast.querySelector(".toast-close").addEventListener("click", () => {
+    toast.classList.add("fade-out");
+    setTimeout(() => toast.remove(), 200);
+  });
+
+  toast.addEventListener("click", (e) => {
+    if (e.target.closest(".toast-close")) return;
+    if (notificationPopover) notificationPopover.hidden = false;
+    toast.classList.add("fade-out");
+    setTimeout(() => toast.remove(), 200);
+  });
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.classList.add("fade-out");
+      setTimeout(() => toast.remove(), 200);
+    }
+  }, 7000);
+}
+
+function renderNotificationsUI(notifications, unreadCount, uid) {
+  if (notificationBadge) {
+    if (unreadCount > 0) {
+      notificationBadge.textContent = unreadCount > 9 ? "9+" : unreadCount;
+      notificationBadge.hidden = false;
+    } else {
+      notificationBadge.hidden = true;
+    }
+  }
+
+  if (!notificationList) return;
+
+  if (notifications.length === 0) {
+    notificationList.innerHTML = `<div class="notification-empty">No notifications yet. Admin replies will appear here in real-time.</div>`;
+    if (markAllReadBtn) markAllReadBtn.style.display = "none";
+    return;
+  }
+
+  if (markAllReadBtn) {
+    markAllReadBtn.style.display = unreadCount > 0 ? "inline-block" : "none";
+  }
+
+  notificationList.innerHTML = notifications.map(notif => {
+    let timeStr = "Recently";
+    if (notif.createdAt && notif.createdAt.toDate) {
+      timeStr = notif.createdAt.toDate().toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    return `
+      <div class="notification-item ${notif.read ? '' : 'unread'}" data-notif-id="${escapeHtml(notif.id)}">
+        <div class="notification-item-title">
+          <span>${escapeHtml(notif.title || "Admin Notification")}</span>
+          <span class="notification-item-time">${escapeHtml(timeStr)}</span>
+        </div>
+        <div class="notification-item-body">${escapeHtml(notif.message || "")}</div>
+        <div class="notification-item-actions">
+          ${!notif.read ? `<button type="button" class="notification-read-btn" data-action="mark-read" data-id="${escapeHtml(notif.id)}">✓ Mark as read</button>` : `<span style="font-size: 10px; color: var(--muted); font-family: var(--mono);">✓ Read</span>`}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  notificationList.querySelectorAll("[data-action='mark-read']").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const notifId = btn.getAttribute("data-id");
+      try {
+        await updateDoc(doc(db, "users", uid, "notifications", notifId), {
+          read: true
+        });
+      } catch (err) {
+        console.warn("Could not mark notification read:", err);
+      }
+    });
+  });
+}
+
+function startNotifications(currentUser) {
+  if (unsubscribeNotifications) unsubscribeNotifications();
+
+  try {
+    const notifRef = collection(db, "users", currentUser.uid, "notifications");
+    const notifQuery = query(notifRef, orderBy("createdAt", "desc"));
+
+    unsubscribeNotifications = onSnapshot(notifQuery, snapshot => {
+      const notifications = [];
+      let unreadCount = 0;
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const notif = {
+          id: docSnap.id,
+          ...data
+        };
+        notifications.push(notif);
+        if (!notif.read) {
+          unreadCount++;
+          if (hasInitializedNotifications && !knownNotificationIds.has(notif.id)) {
+            showWebToast(notif.title || "Admin Reply Received", notif.message || "");
+          }
+        }
+        knownNotificationIds.add(notif.id);
+      });
+
+      hasInitializedNotifications = true;
+      renderNotificationsUI(notifications, unreadCount, currentUser.uid);
+    }, err => {
+      console.warn("Notifications listener warning:", err);
+    });
+  } catch (err) {
+    console.warn("Notifications init error:", err);
+  }
+}
+
+async function updateDirectoryUser(currentUser) {
+  if (!currentUser) return;
+  try {
+    let streakCount = 0;
+    let completedDays = 0;
+    try {
+      if (state) {
+        streakCount = calculateStreak(state).current || 0;
+        completedDays = Object.values(state.logs || {}).filter(isDayComplete).length || 0;
+      }
+    } catch {}
+
+    const dirRef = doc(db, "directory_users", currentUser.uid);
+    await setDoc(dirRef, {
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      displayName: userProfile?.displayName || currentUser.displayName || "Ghost Warrior",
+      currentStreak: streakCount,
+      completedDays: completedDays,
+      lastActive: serverTimestamp()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Directory user sync warning:", err);
+  }
+}
+
 // Modal profile form submission
 if (profileModalForm) {
   profileModalForm.addEventListener("submit", async event => {
@@ -868,6 +1103,15 @@ if (profileModalForm) {
 // Modal action buttons & Sign Out
 async function handleSignOut() {
   if (profileDialog && profileDialog.open) profileDialog.close();
+  if (unsubscribeNotifications) {
+    unsubscribeNotifications();
+    unsubscribeNotifications = null;
+  }
+  knownNotificationIds.clear();
+  hasInitializedNotifications = false;
+  const adminHeaderLink = document.querySelector("#admin-header-link");
+  if (adminHeaderLink) adminHeaderLink.hidden = true;
+
   try {
     localStorage.removeItem(SESSION_FLAG);
     localStorage.setItem("winter_arc_explicit_signout", "true");

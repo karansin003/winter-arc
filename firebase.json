@@ -1,4 +1,7 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": [
     {
       "site": "arc-challenge",
@@ -24,6 +27,10 @@
         }
       ],
       "rewrites": [
+        {
+          "source": "/admin",
+          "destination": "/admin.html"
+        },
         {
           "source": "/guide",
           "destination": "/guide.html"
@@ -86,6 +93,10 @@
         }
       ],
       "rewrites": [
+        {
+          "source": "/admin",
+          "destination": "/admin.html"
+        },
         {
           "source": "/guide",
           "destination": "/guide.html"
