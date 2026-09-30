@@ -112,7 +112,18 @@ form.addEventListener("submit", async (e) => {
       "success",
       "Reset Link Dispatched!",
       `We sent a secure password reset link to <strong>${escapeHtml(email)}</strong>.<br><br>
-       Open your email inbox and click the link to set a new password. If you don't see it within 60 seconds, check your <strong>Spam or Junk</strong> folder.`
+       Open your email inbox and click the link to set a new password.<br>
+       <div style="margin-top: 10px; padding: 10px 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border-left: 3px solid var(--lime);">
+         <span style="color: var(--lime); font-weight: 700; font-size: 12px;">📬 Email Spam me gaya ho to:</span><br>
+         <span style="font-size: 11px; color: #cbd5e1; line-height: 1.5; display: inline-block; margin-top: 3px;">
+           Spam folder open karein aur <strong>"Report not spam"</strong> ya <strong>"Looks safe"</strong> par click karein. Aisa karne se aage se sabhi emails direct Primary Inbox me aane lagenge.
+         </span>
+       </div>
+       <div style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap;">
+         <a href="https://mail.google.com" target="_blank" rel="noopener" class="button button-outline" style="font-size: 12px; padding: 6px 14px; text-decoration: none;">
+           Open Gmail ↗
+         </a>
+       </div>`
     );
 
     // Start 30s cooldown before allowing resend
