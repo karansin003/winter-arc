@@ -25,6 +25,26 @@
       ],
       "rewrites": [
         {
+          "source": "/guide",
+          "destination": "/guide.html"
+        },
+        {
+          "source": "/about",
+          "destination": "/about.html"
+        },
+        {
+          "source": "/faq",
+          "destination": "/faq.html"
+        },
+        {
+          "source": "/contact",
+          "destination": "/contact.html"
+        },
+        {
+          "source": "/disclaimer",
+          "destination": "/disclaimer.html"
+        },
+        {
           "source": "/forgot",
           "destination": "/forgot.html"
         },
@@ -66,6 +86,26 @@
         }
       ],
       "rewrites": [
+        {
+          "source": "/guide",
+          "destination": "/guide.html"
+        },
+        {
+          "source": "/about",
+          "destination": "/about.html"
+        },
+        {
+          "source": "/faq",
+          "destination": "/faq.html"
+        },
+        {
+          "source": "/contact",
+          "destination": "/contact.html"
+        },
+        {
+          "source": "/disclaimer",
+          "destination": "/disclaimer.html"
+        },
         {
           "source": "/forgot",
           "destination": "/forgot.html"

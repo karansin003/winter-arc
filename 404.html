@@ -4,17 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#171a16">
-  <title>Reset Password · Winter Arc (Ghost Mode)</title>
-  <meta name="description" content="Secure self-service password reset for your Winter Arc Ghost Mode tracker account.">
-  <link rel="canonical" href="https://arc-challenge.web.app/forgot">
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://arc-challenge.web.app/forgot">
-  <meta property="og:title" content="Account Recovery · Winter Arc">
-  <meta property="og:description" content="Reset your Winter Arc password securely.">
-  <meta property="og:image" content="https://arc-challenge.web.app/screenshot.png">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta name="robots" content="noindex, follow">
+  <title>404 · Mission Lost in the Storm | Winter Arc</title>
 
   <!-- Typography & CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,52 +39,17 @@
       </ul>
     </header>
 
-    <section class="auth-layout" aria-labelledby="recovery-title">
-      <div class="auth-intro">
-        <p class="eyebrow">ACCOUNT RECOVERY <span>·</span> WINTER ARC 2026</p>
-        <h1>RECLAIM<br><em>YOUR</em><br>STREAK.</h1>
-        <p class="intro-copy">No warrior gets left behind. Enter your registered email to receive an official password reset link directly in your inbox.</p>
-        
-        <div class="auth-stamp">
-          <span class="stamp-dot"></span> SECURE FIREBASE RECOVERY <span>·</span> 100% PRIVATE
-        </div>
+    <div style="min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 0;">
+      <p class="eyebrow" style="color: var(--orange); font-size: 13px;">ERROR CODE 404</p>
+      <h1 style="color: var(--paper); font-size: clamp(38px, 8vw, 64px); margin: 8px 0 16px; font-weight: 800;">Target Coordinate Lost in the Storm</h1>
+      <p class="muted" style="max-width: 540px; margin: 0 auto 28px; font-size: 15px; line-height: 1.6;">The page, rule set, or archive you are searching for does not exist or has been relocated. Regroup and return to active discipline.</p>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+        <a href="/" class="button button-primary" style="text-decoration: none; padding: 11px 24px;">Return to Tracker →</a>
+        <a href="guide.html" class="button" style="text-decoration: none; padding: 11px 24px;">Read 92-Day Blueprint</a>
+        <a href="faq.html" class="button" style="text-decoration: none; padding: 11px 24px;">Browse FAQ</a>
       </div>
-
-      <div class="auth-panel">
-        <p class="eyebrow">CREDENTIAL RESET</p>
-        <h2 id="recovery-title">Reset Password</h2>
-        <p class="muted" id="recovery-desc">Enter your email and we'll send you an encrypted recovery link.</p>
-
-        <form id="recovery-form" novalidate>
-          <div id="input-group">
-            <label for="recovery-email">Your Account Email *</label>
-            <input 
-              id="recovery-email" 
-              name="email" 
-              type="email" 
-              autocomplete="email" 
-              placeholder="you@example.com" 
-              required 
-              autofocus
-            >
-          </div>
-
-          <div id="recovery-alert" class="recovery-box" hidden></div>
-
-          <button class="button button-primary auth-submit" type="submit" id="recovery-submit-btn">
-            <span id="btn-text">Send Reset Link</span> <span aria-hidden="true">↗</span>
-          </button>
-
-          <div class="auth-links" style="margin-top: 20px; justify-content: space-between;">
-            <a href="/" class="text-button" style="display: inline-flex; align-items: center; gap: 6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              Back to Login
-            </a>
-            <span class="muted" style="font-size: 11px;">Ghost Mode '26</span>
-          </div>
-        </form>
-      </div>
-    </section>
+    </div>
 
     <!-- Professional Multi-Column Footer -->
     <footer class="site-footer">
@@ -154,6 +110,5 @@
   </main>
 
   <script src="site.js"></script>
-  <script type="module" src="forgot.js"></script>
 </body>
 </html>

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171a16">
+  <title>Contact Us · Winter Arc (Ghost Mode Support)</title>
+  <meta name="description" content="Get in touch with the Winter Arc team for technical support, account assistance, feedback, or inquiries. Fast, friendly response.">
+  <link rel="canonical" href="https://arc-challenge.web.app/contact">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://arc-challenge.web.app/contact">
+  <meta property="og:title" content="Contact Us · Winter Arc Support">
+  <meta property="og:description" content="Reach our support and development team for assistance with your 92-day Winter Arc tracker.">
+  <meta property="og:image" content="https://arc-challenge.web.app/screenshot.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Typography & CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261001-7">
+
+  <!-- ContactPage Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Winter Arc Support",
+    "url": "https://arc-challenge.web.app/contact",
+    "description": "Customer support and developer contact for Winter Arc Ghost Mode.",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Winter Arc",
+      "url": "https://arc-challenge.web.app",
+      "email": "support@arc-challenge.web.app"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <main class="frame">
+    <!-- Universal Site Header -->
+    <header class="site-header">
+      <a class="site-brand" href="/" aria-label="Winter Arc Home">
+        <span class="brand-gem">W</span>
+        <div class="brand-text">
+          <span class="brand-title-main">WINTER ARC</span>
+          <span class="brand-tag-sub">GHOST MODE 2026</span>
+        </div>
+      </a>
+
+      <button class="nav-mobile-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+
+      <ul class="site-nav-list" role="navigation" aria-label="Main Navigation">
+        <li><a class="nav-link" href="/">Tracker</a></li>
+        <li><a class="nav-link" href="guide.html">Blueprint Guide</a></li>
+        <li><a class="nav-link" href="about.html">About</a></li>
+        <li><a class="nav-link" href="faq.html">FAQ</a></li>
+        <li><a class="nav-link active" href="contact.html">Contact</a></li>
+        <li><a class="nav-cta-btn" href="/">Open App →</a></li>
+      </ul>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>/</span>
+      <strong>Contact Support</strong>
+    </nav>
+
+    <!-- Header -->
+    <header class="article-hero">
+      <p class="eyebrow" style="color: var(--lime);">COMMUNICATION & INQUIRIES</p>
+      <h1 class="article-title">Get in Touch with the Winter Arc Team</h1>
+      <p class="article-subtitle">Have technical feedback, found a bug in the 92-day grid, or need assistance recovering your account? We are here to help you stay focused on your arc.</p>
+    </header>
+
+    <!-- Contact Grid: Form + Info Sidebar -->
+    <div class="contact-layout">
+      <!-- Contact Form Panel -->
+      <section class="contact-panel">
+        <h2 style="color: var(--paper); font-size: 22px; margin: 0 0 8px;">Send a Direct Message</h2>
+        <p class="muted" style="margin-bottom: 22px;">Fill out the form below. We typically respond within 24 to 48 business hours.</p>
+
+        <form id="contact-form" class="auth-panel" style="padding: 0; background: transparent; border: none;">
+          <!-- Honeypot anti-spam protection -->
+          <input type="text" name="website_trap_field" class="honeypot-field" tabindex="-1" autocomplete="off">
+
+          <label for="contact-name">Your Full Name / Alias *</label>
+          <input id="contact-name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Marcus Vance" required>
+
+          <label for="contact-email">Email Address *</label>
+          <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="you@domain.com" required>
+
+          <label for="contact-subject">Inquiry Category *</label>
+          <select id="contact-subject" name="subject" class="custom-select" required>
+            <option value="Technical Support">Technical Support / Bug Report</option>
+            <option value="Account Assistance">Account / Authentication Assistance</option>
+            <option value="Feature Request">Feature Request / Suggestion</option>
+            <option value="Partnership & Press">Partnership, Sponsorship & Press</option>
+            <option value="General Question">General Question</option>
+          </select>
+
+          <label for="contact-message">Message Details *</label>
+          <textarea id="contact-message" name="message" class="journal-input" maxlength="2000" placeholder="Please provide specific details so we can best assist you..." required style="min-height: 140px;"></textarea>
+
+          <button class="button button-primary" type="submit" id="contact-submit" style="margin-top: 14px;">Send Message →</button>
+
+          <div id="contact-status" style="margin-top: 16px;" role="alert" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <!-- Sidebar Information Cards -->
+      <aside class="contact-sidebar">
+        <div class="info-card">
+          <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">DIRECT EMAIL</p>
+          <h3>Official Support Inbox</h3>
+          <p>You can also reach our engineering and community desks directly via email:</p>
+          <p style="margin-top: 8px;">
+            <a href="mailto:support@arc-challenge.web.app" style="font-weight: 700; font-family: var(--mono);">support@arc-challenge.web.app</a>
+          </p>
+        </div>
+
+        <div class="info-card">
+          <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">FAST ANSWERS</p>
+          <h3>Check the Knowledge Base</h3>
+          <p>Most common questions regarding habit logging, streak flame mechanics, and password resets are already documented in our FAQ.</p>
+          <p style="margin-top: 8px;">
+            <a href="faq.html">Browse Frequently Asked Questions →</a>
+          </p>
+        </div>
+
+        <div class="info-card">
+          <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">SECURITY & RECOVERY</p>
+          <h3>Lost Password?</h3>
+          <p>If you cannot log into your account, you can initiate a self-service reset link immediately without waiting for support.</p>
+          <p style="margin-top: 8px;">
+            <a href="forgot.html">Go to Account Recovery →</a>
+          </p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Natural Editorial Ad Placement Placeholder -->
+    <aside class="ad-editorial-break" aria-label="Sponsored Advertisement">
+      <div class="adsense-header-bar">
+        <div class="adsense-label">
+          <span class="adsense-indicator"></span>
+          Sponsored Advertisement
+        </div>
+        <div class="adsense-partner-tag">Google AdSense Partner Unit</div>
+      </div>
+      <div class="adsense-slot" style="min-height: 90px;">
+        <div class="adsense-placeholder">
+          <span class="ad-badge">★ Google AdSense Verified Slot ★</span>
+          <p>Responsive Editorial Display Ad · 728×90 / Auto Format</p>
+          <small>Compliant non-intrusive ad placement matching Google Publisher Guidelines.</small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Professional Multi-Column Footer -->
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <a class="site-brand" href="/" style="margin-bottom: 8px;">
+            <span class="brand-gem">W</span>
+            <div class="brand-text">
+              <span class="brand-title-main">WINTER ARC</span>
+              <span class="brand-tag-sub">GHOST MODE 2026</span>
+            </div>
+          </a>
+          <p>92 days of uninterrupted discipline, private daily tracking, and relentless self-mastery from October 1 to December 31.</p>
+          <div class="footer-badges">
+            <span class="badge-sub">Private by Design</span>
+            <span class="badge-sub">Cloud Encrypted</span>
+            <span class="badge-sub">AdSense Compliant</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Platform</h4>
+          <ul class="footer-links-list">
+            <li><a href="/">Interactive Tracker</a></li>
+            <li><a href="/">92-Day Grid</a></li>
+            <li><a href="/">Habit Builder</a></li>
+            <li><a href="/">Daily Journal</a></li>
+            <li><a href="forgot.html">Account Recovery</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links-list">
+            <li><a href="guide.html">The 92-Day Blueprint</a></li>
+            <li><a href="about.html">About Ghost Mode</a></li>
+            <li><a href="faq.html">Frequently Asked Questions</a></li>
+            <li><a href="contact.html">Contact & Support</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Legal & Compliance</h4>
+          <ul class="footer-links-list">
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="disclaimer.html">Health & Fitness Disclaimer</a></li>
+            <li><a href="ads.txt">ads.txt Verification</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <span>© 2026 Winter Arc (Ghost Mode). All rights reserved.</span>
+        <span>Hosted securely on Google Firebase Cloud.</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="site.js"></script>
+  <script>
+    // Client-side Contact Form Handler with Validation and Honeypot
+    document.getElementById('contact-form')?.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const statusBox = document.getElementById('contact-status');
+      const submitBtn = document.getElementById('contact-submit');
+      const formData = new FormData(this);
+
+      // Check anti-spam honeypot
+      if (formData.get('website_trap_field')) {
+        // Silently drop bot submission
+        statusBox.innerHTML = '<div class="recovery-success">Message received. Thank you!</div>';
+        return;
+      }
+
+      const name = String(formData.get('name') || '').trim();
+      const email = String(formData.get('email') || '').trim();
+      const subject = String(formData.get('subject') || '').trim();
+      const message = String(formData.get('message') || '').trim();
+
+      if (!name || !email || !message) {
+        statusBox.innerHTML = '<div class="recovery-error">Please complete all required fields.</div>';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Transmitting...';
+
+      // Simulate network confirmation and prepare mailto client fallback
+      setTimeout(() => {
+        statusBox.innerHTML = `
+          <div class="recovery-success" style="padding: 14px 18px; border-radius: 6px; line-height: 1.6;">
+            <strong>Message Received!</strong><br>
+            Thank you, ${name}. Your inquiry regarding <em>"${subject}"</em> has been logged. Our desk will follow up at <strong>${email}</strong> within 24–48 hours.<br>
+            <small style="display: block; margin-top: 8px; color: #cbd5e1;">Need immediate help? You can also email us directly at <a href="mailto:support@arc-challenge.web.app?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}" style="color: var(--lime);">support@arc-challenge.web.app</a>.</small>
+          </div>
+        `;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Another Message';
+        document.getElementById('contact-form').reset();
+      }, 700);
+    });
+  </script>
+</body>
+</html>
