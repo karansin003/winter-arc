@@ -23,8 +23,8 @@ button { color: inherit; }
 [hidden] { display: none !important; }
 .grain { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .12; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E"); }
 .frame { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
-.auth-layout { min-height: 100vh; display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: clamp(40px, 9vw, 120px); padding: 64px 0; }
-.auth-intro h1, .hero h1 { margin: 22px 0; font-size: clamp(48px, 7vw, 88px); line-height: .94; letter-spacing: 0; font-weight: 800; }
+.auth-layout { min-height: calc(100vh - 40px); display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; column-gap: clamp(32px, 6vw, 72px); row-gap: 16px; padding: 28px 0 14px; }
+.auth-intro h1, .hero h1 { margin: 18px 0; font-size: clamp(44px, 6.5vw, 80px); line-height: .95; letter-spacing: 0; font-weight: 800; }
 .auth-intro h1 em, .hero h1 em { color: var(--lime); font-style: normal; }
 .eyebrow, .auth-stamp, .countdown-heading, .countdown span, .progress-label, .footer { font: 500 11px/1.4 var(--mono); letter-spacing: 0; }
 .eyebrow { color: var(--lime); }
@@ -269,15 +269,18 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 
 /* Google AdSense Bottom Ad Unit & Policy Styling */
 .adsense-bottom-container {
-  margin: 36px 0 20px;
-  padding: 16px 20px;
+  max-width: 728px;
+  width: 100%;
+  margin: 12px auto 6px;
+  padding: 10px 16px;
   background: linear-gradient(135deg, rgba(29, 36, 26, 0.95), rgba(18, 22, 17, 0.98));
   border: 1.5px solid rgba(213, 255, 84, 0.45);
-  border-radius: 12px;
-  box-shadow: 0 0 28px rgba(213, 255, 84, 0.12), 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(213, 255, 84, 0.1), 0 6px 20px rgba(0, 0, 0, 0.45);
   position: relative;
   overflow: hidden;
   text-align: left;
+  box-sizing: border-box;
 }
 .adsense-bottom-container::before {
   content: '';
@@ -292,24 +295,24 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
   border-bottom: 1px solid rgba(213, 255, 84, 0.15);
 }
 .adsense-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   color: var(--lime);
   font-weight: 700;
   text-transform: uppercase;
 }
 .adsense-indicator {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--lime);
   box-shadow: 0 0 8px var(--lime);
@@ -321,20 +324,20 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 }
 .adsense-partner-tag {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8.5px;
   color: #94a3b8;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .adsense-slot {
-  min-height: 90px;
+  min-height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(9, 11, 8, 0.85);
   border: 1px dashed rgba(213, 255, 84, 0.35);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 6px;
+  padding: 6px 12px;
   transition: all .2s ease;
 }
 .adsense-slot:hover {
@@ -345,40 +348,40 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   text-align: center;
 }
 .adsense-placeholder .ad-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 12px;
-  border-radius: 20px;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 12px;
   background: rgba(213, 255, 84, 0.15);
   border: 1px solid rgba(213, 255, 84, 0.4);
   color: var(--lime);
-  font: 700 11px var(--mono);
+  font: 700 9px var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .adsense-placeholder p {
-  margin: 6px 0 2px;
-  font-size: 13px;
+  margin: 2px 0 1px;
+  font-size: 11px;
   font-weight: 700;
   color: #f8fafc;
 }
 .adsense-placeholder small {
-  font-size: 11px;
+  font-size: 9.5px;
   color: #94a3b8;
-  line-height: 1.5;
+  line-height: 1.3;
 }
 .adsense-placeholder code {
   color: var(--lime);
   font-family: var(--mono);
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(213, 255, 84, 0.25);
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 100; max-width: min(380px, calc(100% - 40px)); padding: 12px 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-raised); color: var(--paper); font-size: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); animation: toastIn .2s ease; }
