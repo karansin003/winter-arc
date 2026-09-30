@@ -65,7 +65,7 @@ let unsubscribeProfile = null;
 let saveTimer;
 let authMode = "signin";
 let activeTab = "today";
-let selectedDate = todayKey();
+let selectedDate = clampDate(todayKey());
 let state = initialState();
 
 function dateKey(date) {
@@ -268,6 +268,8 @@ function renderToday() {
   const circumference = 2 * Math.PI * 35;
   const offset = circumference * (1 - percent / 100);
   const canEdit = isPastOrToday(date);
+  const isActualToday = date === clampDate(todayKey());
+  const dayNum = Math.max(1, Math.min(ARC_DAYS, Math.round((parseDate(date).getTime() - parseDate(ARC_START).getTime()) / DAY_MS) + 1));
   const habits = state.habits.length
     ? state.habits
         .map(habit => {
@@ -288,10 +290,13 @@ function renderToday() {
 
   return `<div class="content-heading">
       <div>
-        <p class="eyebrow">DAILY CHECK-IN</p>
-        <h2>${date === todayKey() ? "Today's execution" : "Daily execution"}</h2>
+        <p class="eyebrow">DAY ${dayNum} OF ${ARC_DAYS} · ${isActualToday ? "TODAY" : "DAY " + dayNum}</p>
+        <h2>${isActualToday ? "Today's rules & execution" : `Day ${dayNum} rules & execution`}</h2>
       </div>
-      <span class="date-label">${escapeHtml(getSelectedLabel())}</span>
+      <div class="today-heading-actions">
+        <span class="date-label">${escapeHtml(getSelectedLabel())}</span>
+        ${!isActualToday ? `<button type="button" class="small-button accent-back-btn" data-action="return-today" title="Return to current day">Back to Today</button>` : ""}
+      </div>
     </div>
     <div class="today-grid">
       <section class="panel panel-pad">
@@ -330,22 +335,24 @@ function renderToday() {
 
 function renderCalendar() {
   const days = Array.from({ length: ARC_DAYS }, (_, index) => addDays(ARC_START, index));
+  const activeDayKey = clampDate(todayKey());
   const cells = days
     .map((day, index) => {
       const done = completedCount(day);
       const future = day > todayKey();
       const status = isPerfect(day) ? "complete" : done ? "partial" : "";
+      const isCurrentDay = day === activeDayKey;
       const label = `Day ${index + 1}, ${day}, ${isPerfect(day) ? "complete" : done ? `${dayPercent(day)} percent complete` : future ? "future" : "not started"}`;
-      return `<button type="button" class="calendar-day ${status} ${future ? "future" : ""} ${selectedDate === day ? "selected" : ""}" data-select-day="${day}" aria-label="${label}" title="${label}">${index + 1}</button>`;
+      return `<button type="button" class="calendar-day ${status} ${future ? "future" : ""} ${selectedDate === day ? "selected" : ""} ${isCurrentDay ? "today-cell" : ""}" data-select-day="${day}" aria-label="${label}" title="Click to open rules for Day ${index + 1} (${day})">${index + 1}</button>`;
     })
     .join("");
 
   return `<div class="content-heading">
       <div>
-        <p class="eyebrow">OCT 01 — DEC 31</p>
-        <h2>Your 92 days</h2>
+        <p class="eyebrow">OCT 01 — DEC 31 · 92 DAYS</p>
+        <h2>92-Day Execution Grid</h2>
       </div>
-      <span class="date-label">Select a day to open its checklist</span>
+      <span class="date-label">Click any day to open its rules & checklist</span>
     </div>
     <section class="panel panel-pad">
       <div class="calendar-grid">${cells}</div>
@@ -353,6 +360,7 @@ function renderCalendar() {
         <span class="legend-item"><i class="legend-swatch complete"></i>All done</span>
         <span class="legend-item"><i class="legend-swatch partial"></i>Partially done</span>
         <span class="legend-item"><i class="legend-swatch"></i>Not done / future</span>
+        <span class="legend-item"><i class="legend-swatch" style="border: 1px solid var(--lime); box-shadow: 0 0 6px var(--lime);"></i>Current active day</span>
       </div>
     </section>
     <section class="panel panel-pad selected-day">
@@ -361,7 +369,7 @@ function renderCalendar() {
           <p class="panel-kicker">SELECTED DAY</p>
           <h2>${escapeHtml(getSelectedLabel())}</h2>
         </div>
-        <button class="small-button" type="button" data-action="open-today">Open checklist</button>
+        <button class="small-button button-primary" type="button" data-action="open-today">Open Rules & Checklist →</button>
       </div>
       <p class="muted">${completedCount(selectedDate)} of ${state.habits.length} rules completed · ${dayPercent(selectedDate)}%</p>
     </section>`;
@@ -787,6 +795,9 @@ document.querySelector("#sign-out").addEventListener("click", async () => {
 document.querySelectorAll(".tab").forEach(tab =>
   tab.addEventListener("click", () => {
     activeTab = tab.dataset.tab;
+    if (activeTab === "today") {
+      selectedDate = clampDate(todayKey());
+    }
     render();
   })
 );
@@ -807,7 +818,9 @@ content.addEventListener("click", async event => {
   const dayButton = event.target.closest("[data-select-day]");
   if (dayButton) {
     selectedDate = dayButton.dataset.selectDay;
+    activeTab = "today";
     render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
     return;
   }
 
@@ -817,6 +830,15 @@ content.addEventListener("click", async event => {
   if (action.dataset.action === "open-today") {
     activeTab = "today";
     render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (action.dataset.action === "return-today") {
+    selectedDate = clampDate(todayKey());
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
   }
 
   if (action.dataset.action === "delete-habit") {
