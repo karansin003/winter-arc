@@ -535,12 +535,12 @@ function updateAuthMode() {
   const emailLabel = document.querySelector("#email-label");
   const emailInput = document.querySelector("#email");
 
-  document.querySelector("#auth-title").textContent = create ? "Create your account" : "Sign in";
+  document.querySelector("#auth-title").textContent = create ? "Create your account" : "Login";
   document.querySelector("#auth-description").textContent = create
     ? "Set up your private tracker. All your habits and daily logs sync across devices."
     : "Pick up exactly where you left off.";
-  document.querySelector("#auth-submit").innerHTML = `${create ? "Start Winter Arc" : "Sign in"} <span aria-hidden="true">↗</span>`;
-  document.querySelector("#auth-switch").textContent = create ? "Already have an account? Sign in" : "Create an account";
+  document.querySelector("#auth-submit").innerHTML = `${create ? "Start Winter Arc" : "Login"} <span aria-hidden="true">↗</span>`;
+  document.querySelector("#auth-switch").textContent = create ? "Already have an account? Login" : "Create an account";
   document.querySelector("#password").autocomplete = create ? "new-password" : "current-password";
 
   if (extraFields) extraFields.hidden = !create;
