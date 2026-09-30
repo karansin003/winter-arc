@@ -571,9 +571,13 @@
           style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--lime); padding: 10px 14px; border-radius: 6px; font: 12px var(--mono);">
       </div>
       <div style="margin-bottom: 20px;">
-        <label style="font: 11px var(--mono); color: var(--muted); display: block; margin-bottom: 6px;">PASSWORD</label>
-        <input type="password" id="admin-password" placeholder="Enter admin password" required
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="font: 11px var(--mono); color: var(--muted); margin: 0;">PASSWORD</label>
+          <a href="forgot.html?email=karansin8672@gmail.com" target="_blank" style="font: 11px var(--mono); color: var(--lime); text-decoration: none;">Forgot password? ↗</a>
+        </div>
+        <input type="password" id="admin-password" placeholder="Enter password of karansin8672@gmail.com" required
           style="width: 100%; background: #0c0d0e; border: 1px solid var(--line); color: var(--paper); padding: 10px 14px; border-radius: 6px; font-size: 14px;">
+        <small style="display: block; margin-top: 6px; font: 10px var(--mono); color: var(--muted);">Use the same password you set for this email on the tracker, or click 'Forgot password' to get a reset link on your Gmail.</small>
       </div>
       <button type="submit" id="admin-login-btn" class="button button-primary" style="width: 100%; justify-content: center;">
         Unlock Command Center →
