@@ -207,10 +207,33 @@ function updateCountdown() {
   }
 }
 
+function sanitizeUsername(input) {
+  return String(input || "").toLowerCase().trim().replace(/[^a-z0-9_]/g, "");
+}
+
+function usernameToEmail(identifier) {
+  const trimmed = String(identifier || "").trim();
+  if (trimmed.includes("@")) {
+    return trimmed.toLowerCase();
+  }
+  const safe = sanitizeUsername(trimmed);
+  return `${safe || "warrior"}@ghost.arc`;
+}
+
+function getDisplayEmail(email) {
+  if (!email || email === "—") return "Not set";
+  if (email.endsWith("@ghost.arc")) {
+    const nick = email.replace("@ghost.arc", "");
+    return `${nick} (Username login · No email set)`;
+  }
+  return email;
+}
+
 function updateProfileUI() {
   const name = userProfile?.displayName || user?.displayName || user?.email || "Warrior";
   const initial = (name.trim()[0] || "W").toUpperCase();
-  const email = user?.email || "—";
+  const rawEmail = user?.email || "—";
+  const displayEmail = getDisplayEmail(rawEmail);
   const streak = currentStreak();
   const perfectDays = Object.keys(state.logs).filter(day => isPerfect(day)).length;
   const pctText = document.querySelector("#global-percent")?.textContent || "0%";
@@ -221,7 +244,7 @@ function updateProfileUI() {
   const accountEmail = document.querySelector("#account-email");
   if (accountEmail) {
     accountEmail.textContent = name;
-    accountEmail.title = email;
+    accountEmail.title = displayEmail;
   }
 
   // Modal dialog elements
@@ -230,7 +253,7 @@ function updateProfileUI() {
   const headerName = document.querySelector("#profile-header-name");
   if (headerName) headerName.textContent = name;
   const headerEmail = document.querySelector("#profile-header-email");
-  if (headerEmail) headerEmail.textContent = email;
+  if (headerEmail) headerEmail.textContent = displayEmail;
 
   const statStreak = document.querySelector("#profile-stat-streak");
   if (statStreak) statStreak.textContent = `${streak} 🔥`;
@@ -464,7 +487,7 @@ function renderProfile() {
         <input id="prof-mantra" name="mantra" type="text" maxlength="140" value="${escapeHtml(mantra)}" placeholder="e.g. Discipline is keeping a promise to yourself.">
 
         <div class="profile-meta">
-          <div><span>EMAIL</span><strong>${escapeHtml(user?.email || "—")}</strong></div>
+          <div><span>EMAIL / IDENTIFIER</span><strong>${escapeHtml(getDisplayEmail(user?.email))}</strong></div>
           <div><span>MEMBER SINCE</span><strong>${escapeHtml(memberSince)}</strong></div>
         </div>
 
@@ -474,7 +497,7 @@ function renderProfile() {
       <div class="profile-security">
         <div>
           <strong>Password</strong>
-          <p class="muted">Send a password reset link to ${escapeHtml(user?.email || "your account email")}.</p>
+          <p class="muted">Send a password reset link to ${escapeHtml(getDisplayEmail(user?.email))}.</p>
         </div>
         <button class="small-button" type="button" data-action="profile-reset">Send reset link</button>
       </div>
@@ -594,6 +617,8 @@ function updateAuthMode() {
   const create = authMode === "create";
   const extraFields = document.querySelector("#signup-extra-fields");
   const displayNameInput = document.querySelector("#display-name");
+  const emailLabel = document.querySelector("#email-label");
+  const emailInput = document.querySelector("#email");
 
   document.querySelector("#auth-title").textContent = create ? "Create your account" : "Sign in";
   document.querySelector("#auth-description").textContent = create
@@ -605,6 +630,19 @@ function updateAuthMode() {
 
   if (extraFields) extraFields.hidden = !create;
   if (displayNameInput) displayNameInput.required = create;
+
+  if (emailLabel && emailInput) {
+    if (create) {
+      emailLabel.innerHTML = 'Email <small class="optional-tag">(Optional — for password recovery)</small>';
+      emailInput.required = false;
+      emailInput.placeholder = "you@example.com (optional)";
+    } else {
+      emailLabel.innerHTML = 'Username or Email';
+      emailInput.required = true;
+      emailInput.placeholder = "Username or you@example.com";
+    }
+  }
+
   authMessage.textContent = "";
 }
 
@@ -623,10 +661,10 @@ function firebaseReady() {
 
 function friendlyAuthError(error) {
   const messages = {
-    "auth/email-already-in-use": "An account already exists for this email. Sign in instead.",
-    "auth/invalid-credential": "Email or password is incorrect.",
+    "auth/email-already-in-use": "This username or email is already registered. Sign in instead or choose another name.",
+    "auth/invalid-credential": "Username/email or password is incorrect.",
     "auth/weak-password": "Use a stronger password with at least 6 characters.",
-    "auth/invalid-email": "Enter a valid email address.",
+    "auth/invalid-email": "Please enter a valid username or email.",
     "auth/too-many-requests": "Too many attempts. Try again in a little while.",
     "auth/network-request-failed": "Network error. Check your internet connection."
   };
@@ -720,16 +758,18 @@ if (profileModalForm) {
 }
 
 // Modal action buttons
+// Modal action buttons
 const modalResetPassword = document.querySelector("#modal-reset-password");
 if (modalResetPassword) {
   modalResetPassword.addEventListener("click", async () => {
-    if (!user?.email) {
-      showMessage("No email associated with this account.", true);
+    const email = user?.email;
+    if (!email || email.endsWith("@ghost.arc")) {
+      showMessage("This account was created with a username. No email is attached for password reset.", true);
       return;
     }
     try {
-      await sendPasswordResetEmail(auth, user.email);
-      showMessage(`Password reset email sent to ${user.email}.`);
+      await sendPasswordResetEmail(auth, email);
+      showMessage(`Password reset email sent to ${email}.`);
     } catch (error) {
       showMessage(friendlyAuthError(error), true);
     }
@@ -752,7 +792,7 @@ if (modalSignOut) {
 authForm.addEventListener("submit", async event => {
   event.preventDefault();
   if (!auth) return;
-  const email = authForm.email.value.trim();
+  const rawIdentifier = (authForm.email?.value || "").trim();
   const password = authForm.password.value;
   const displayName = (document.querySelector("#display-name")?.value || "").trim();
   const primaryGoal = (document.querySelector("#signup-goal")?.value || "").trim();
@@ -760,11 +800,25 @@ authForm.addEventListener("submit", async event => {
   const dailyTarget = (document.querySelector("#signup-focus")?.value || "").trim();
   const mantra = (document.querySelector("#signup-mantra")?.value || "").trim();
 
+  let authEmail = "";
+  if (rawIdentifier) {
+    authEmail = usernameToEmail(rawIdentifier);
+  } else if (authMode === "create") {
+    if (!displayName) {
+      authMessage.textContent = "Please enter your name or username.";
+      return;
+    }
+    authEmail = usernameToEmail(displayName);
+  } else {
+    authMessage.textContent = "Please enter your username or email.";
+    return;
+  }
+
   authMessage.textContent = "Working...";
   try {
     if (authMode === "create") {
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(credential.user, { displayName });
+      const credential = await createUserWithEmailAndPassword(auth, authEmail, password);
+      await updateProfile(credential.user, { displayName: displayName || "Ghost Warrior" });
 
       const newProfile = {
         displayName: displayName || "Ghost Warrior",
@@ -772,6 +826,7 @@ authForm.addEventListener("submit", async event => {
         wakeUpTime,
         dailyTarget: dailyTarget || "45 min training + 2h deep focus",
         mantra: mantra || "Discipline is keeping a promise to yourself.",
+        hasCustomEmail: rawIdentifier.includes("@"),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -784,7 +839,7 @@ authForm.addEventListener("submit", async event => {
       }
       userProfile = newProfile;
     } else {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, authEmail, password);
     }
     authForm.reset();
   } catch (error) {
@@ -798,14 +853,18 @@ document.querySelector("#auth-switch").addEventListener("click", () => {
 });
 
 document.querySelector("#reset-password").addEventListener("click", async () => {
-  const email = authForm.email.value.trim();
-  if (!auth || !email) {
-    authMessage.textContent = "Enter your email first, then request a reset link.";
+  const rawIdentifier = (authForm.email?.value || "").trim();
+  if (!auth || !rawIdentifier) {
+    authMessage.textContent = "Enter your registered email address first, then request a reset link.";
+    return;
+  }
+  if (!rawIdentifier.includes("@")) {
+    authMessage.textContent = "Password reset requires your full email address (e.g. you@example.com).";
     return;
   }
   try {
-    await sendPasswordResetEmail(auth, email);
-    authMessage.textContent = "Password reset email sent.";
+    await sendPasswordResetEmail(auth, rawIdentifier);
+    authMessage.textContent = `Password reset email sent to ${rawIdentifier}.`;
   } catch (error) {
     authMessage.textContent = friendlyAuthError(error);
   }

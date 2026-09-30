@@ -69,6 +69,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 .password-toggle:hover { color: var(--lime); background: rgba(255, 255, 255, 0.08); }
 .password-toggle:focus-visible { outline: 1px solid var(--lime); }
 
+.optional-tag { color: var(--muted); font-size: 10px; font-family: var(--mono); text-transform: none; font-weight: 400; margin-left: 6px; }
+
 /* Signup extra basic info fields */
 .signup-extra-fields { display: grid; gap: 4px; margin-bottom: 4px; animation: fadeIn .2s ease; }
 .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
