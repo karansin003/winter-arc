@@ -207,33 +207,10 @@ function updateCountdown() {
   }
 }
 
-function sanitizeUsername(input) {
-  return String(input || "").toLowerCase().trim().replace(/[^a-z0-9_]/g, "");
-}
-
-function usernameToEmail(identifier) {
-  const trimmed = String(identifier || "").trim();
-  if (trimmed.includes("@")) {
-    return trimmed.toLowerCase();
-  }
-  const safe = sanitizeUsername(trimmed);
-  return `${safe || "warrior"}@ghost.arc`;
-}
-
-function getDisplayEmail(email) {
-  if (!email || email === "—") return "Not set";
-  if (email.endsWith("@ghost.arc")) {
-    const nick = email.replace("@ghost.arc", "");
-    return `${nick} (Username login · No email set)`;
-  }
-  return email;
-}
-
 function updateProfileUI() {
   const name = userProfile?.displayName || user?.displayName || user?.email || "Warrior";
   const initial = (name.trim()[0] || "W").toUpperCase();
-  const rawEmail = user?.email || "—";
-  const displayEmail = getDisplayEmail(rawEmail);
+  const email = user?.email || "—";
   const streak = currentStreak();
   const perfectDays = Object.keys(state.logs).filter(day => isPerfect(day)).length;
   const pctText = document.querySelector("#global-percent")?.textContent || "0%";
@@ -244,7 +221,7 @@ function updateProfileUI() {
   const accountEmail = document.querySelector("#account-email");
   if (accountEmail) {
     accountEmail.textContent = name;
-    accountEmail.title = displayEmail;
+    accountEmail.title = email;
   }
 
   // Modal dialog elements
@@ -253,7 +230,7 @@ function updateProfileUI() {
   const headerName = document.querySelector("#profile-header-name");
   if (headerName) headerName.textContent = name;
   const headerEmail = document.querySelector("#profile-header-email");
-  if (headerEmail) headerEmail.textContent = displayEmail;
+  if (headerEmail) headerEmail.textContent = email;
 
   const statStreak = document.querySelector("#profile-stat-streak");
   if (statStreak) statStreak.textContent = `${streak} 🔥`;
@@ -440,71 +417,10 @@ function renderJournal() {
     <p class="muted">Your journal is private to your signed-in account and synced to your Firebase profile.</p>`;
 }
 
-function renderProfile() {
-  const name = userProfile?.displayName || user?.displayName || "";
-  const goal = userProfile?.primaryGoal || "";
-  const wake = userProfile?.wakeUpTime || "05:00 AM";
-  const focus = userProfile?.dailyTarget || "";
-  const mantra = userProfile?.mantra || "";
-  const createdAt = user?.metadata?.creationTime;
-  const memberSince = createdAt
-    ? new Date(createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
-    : "—";
-
-  return `<div class="content-heading">
-      <div>
-        <p class="eyebrow">WARRIOR ACCOUNT</p>
-        <h2>Profile & Settings</h2>
-      </div>
-      <button class="small-button" type="button" id="open-top-profile-modal">Open Full Profile Modal ↗</button>
-    </div>
-    <section class="panel panel-pad profile-panel">
-      <form id="profile-inpage-form" class="profile-form">
-        <label for="prof-name">Name / Ghost Alias *</label>
-        <input id="prof-name" name="name" type="text" maxlength="80" autocomplete="name" value="${escapeHtml(name)}" placeholder="Your name" required>
-
-        <label for="prof-goal">Primary Arc Goal</label>
-        <input id="prof-goal" name="primaryGoal" type="text" maxlength="120" value="${escapeHtml(goal)}" placeholder="e.g. Build 5kg muscle + 10k steps daily">
-
-        <div class="form-row-2">
-          <div>
-            <label for="prof-wake">Target Wake-up</label>
-            <select id="prof-wake" name="wakeUpTime" class="custom-select">
-              <option value="05:00 AM" ${wake === "05:00 AM" ? "selected" : ""}>05:00 AM (Classic)</option>
-              <option value="05:30 AM" ${wake === "05:30 AM" ? "selected" : ""}>05:30 AM</option>
-              <option value="06:00 AM" ${wake === "06:00 AM" ? "selected" : ""}>06:00 AM</option>
-              <option value="06:30 AM" ${wake === "06:30 AM" ? "selected" : ""}>06:30 AM</option>
-              <option value="07:00 AM" ${wake === "07:00 AM" ? "selected" : ""}>07:00 AM</option>
-            </select>
-          </div>
-          <div>
-            <label for="prof-focus">Daily Focus Target</label>
-            <input id="prof-focus" name="dailyTarget" type="text" maxlength="60" value="${escapeHtml(focus)}" placeholder="e.g. 2h Deep Work">
-          </div>
-        </div>
-
-        <label for="prof-mantra">Personal Rule / Mantra</label>
-        <input id="prof-mantra" name="mantra" type="text" maxlength="140" value="${escapeHtml(mantra)}" placeholder="e.g. Discipline is keeping a promise to yourself.">
-
-        <div class="profile-meta">
-          <div><span>EMAIL / IDENTIFIER</span><strong>${escapeHtml(getDisplayEmail(user?.email))}</strong></div>
-          <div><span>MEMBER SINCE</span><strong>${escapeHtml(memberSince)}</strong></div>
-        </div>
-
-        <button class="button button-primary" type="submit">Save Profile</button>
-      </form>
-
-      <div class="profile-security">
-        <div>
-          <strong>Password</strong>
-          <p class="muted">Send a password reset link to ${escapeHtml(getDisplayEmail(user?.email))}.</p>
-        </div>
-        <button class="small-button" type="button" data-action="profile-reset">Send reset link</button>
-      </div>
-    </section>`;
-}
-
 function render() {
+  if (!["today", "calendar", "habits", "journal"].includes(activeTab)) {
+    activeTab = "today";
+  }
   document.querySelectorAll(".tab").forEach(tab => {
     const active = tab.dataset.tab === activeTab;
     tab.classList.toggle("active", active);
@@ -514,8 +430,7 @@ function render() {
     today: renderToday,
     calendar: renderCalendar,
     habits: renderHabits,
-    journal: renderJournal,
-    profile: renderProfile
+    journal: renderJournal
   }[activeTab]();
 }
 
@@ -632,15 +547,10 @@ function updateAuthMode() {
   if (displayNameInput) displayNameInput.required = create;
 
   if (emailLabel && emailInput) {
-    if (create) {
-      emailLabel.innerHTML = 'Email <small class="optional-tag">(Optional — for password recovery)</small>';
-      emailInput.required = false;
-      emailInput.placeholder = "you@example.com (optional)";
-    } else {
-      emailLabel.innerHTML = 'Username or Email';
-      emailInput.required = true;
-      emailInput.placeholder = "Username or you@example.com";
-    }
+    emailLabel.innerHTML = 'Email *';
+    emailInput.required = true;
+    emailInput.type = "email";
+    emailInput.placeholder = "you@example.com";
   }
 
   authMessage.textContent = "";
@@ -661,10 +571,10 @@ function firebaseReady() {
 
 function friendlyAuthError(error) {
   const messages = {
-    "auth/email-already-in-use": "This username or email is already registered. Sign in instead or choose another name.",
-    "auth/invalid-credential": "Username/email or password is incorrect.",
+    "auth/email-already-in-use": "An account already exists for this email. Sign in instead.",
+    "auth/invalid-credential": "Email or password is incorrect.",
     "auth/weak-password": "Use a stronger password with at least 6 characters.",
-    "auth/invalid-email": "Please enter a valid username or email.",
+    "auth/invalid-email": "Please enter a valid email address.",
     "auth/too-many-requests": "Too many attempts. Try again in a little while.",
     "auth/network-request-failed": "Network error. Check your internet connection."
   };
@@ -680,32 +590,56 @@ async function handleProfileSave(formData) {
 
   if (!name || !auth.currentUser) return;
   const saveBtn = document.querySelector("#save-profile-btn");
-  if (saveBtn) saveBtn.textContent = "Saving...";
+  if (saveBtn) {
+    saveBtn.textContent = "Saving...";
+    saveBtn.disabled = true;
+  }
+
+  // 1. Immediately update local state and localStorage
+  userProfile = {
+    displayName: name,
+    primaryGoal,
+    wakeUpTime,
+    dailyTarget,
+    mantra,
+    email: auth.currentUser.email || "",
+    updatedAt: new Date().toISOString()
+  };
 
   try {
-    await updateProfile(auth.currentUser, { displayName: name });
+    localStorage.setItem(`winter-arc-profile:${auth.currentUser.uid}`, JSON.stringify(userProfile));
+  } catch {}
+
+  // 2. Immediately reflect changes in header, avatar and dialog
+  updateProfileUI();
+
+  // 3. Save to Firebase Auth & Firestore with non-blocking timeout
+  try {
+    const authUpdate = updateProfile(auth.currentUser, { displayName: name });
+    const firestoreUpdate = setDoc(
+      doc(db, "users", auth.currentUser.uid, "winterArc", "profile"),
+      {
+        ...userProfile,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    await Promise.race([
+      Promise.all([authUpdate, firestoreUpdate]),
+      new Promise(resolve => setTimeout(resolve, 800))
+    ]);
+
     user = auth.currentUser;
-    userProfile = {
-      displayName: name,
-      primaryGoal,
-      wakeUpTime,
-      dailyTarget,
-      mantra,
-      updatedAt: serverTimestamp()
-    };
-
-    await setDoc(doc(db, "users", user.uid, "winterArc", "profile"), userProfile, { merge: true });
-    try {
-      localStorage.setItem(`winter-arc-profile:${user.uid}`, JSON.stringify(userProfile));
-    } catch {}
-
-    updateProfileUI();
     showMessage("Profile saved successfully!");
-    if (saveBtn) saveBtn.textContent = "Save Profile Changes";
-    if (activeTab === "profile") render();
   } catch (error) {
-    if (saveBtn) saveBtn.textContent = "Save Profile Changes";
-    showMessage(`Profile update failed: ${friendlyAuthError(error)}`, true);
+    console.warn("Cloud save warning:", error);
+    showMessage("Profile saved.");
+  } finally {
+    if (saveBtn) {
+      saveBtn.textContent = "Save Profile Changes";
+      saveBtn.disabled = false;
+    }
   }
 }
 
@@ -758,23 +692,6 @@ if (profileModalForm) {
 }
 
 // Modal action buttons
-// Modal action buttons
-const modalResetPassword = document.querySelector("#modal-reset-password");
-if (modalResetPassword) {
-  modalResetPassword.addEventListener("click", async () => {
-    const email = user?.email;
-    if (!email || email.endsWith("@ghost.arc")) {
-      showMessage("This account was created with a username. No email is attached for password reset.", true);
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showMessage(`Password reset email sent to ${email}.`);
-    } catch (error) {
-      showMessage(friendlyAuthError(error), true);
-    }
-  });
-}
 
 const modalSignOut = document.querySelector("#modal-sign-out");
 if (modalSignOut) {
@@ -792,7 +709,7 @@ if (modalSignOut) {
 authForm.addEventListener("submit", async event => {
   event.preventDefault();
   if (!auth) return;
-  const rawIdentifier = (authForm.email?.value || "").trim();
+  const email = (authForm.email?.value || "").trim();
   const password = authForm.password.value;
   const displayName = (document.querySelector("#display-name")?.value || "").trim();
   const primaryGoal = (document.querySelector("#signup-goal")?.value || "").trim();
@@ -800,24 +717,19 @@ authForm.addEventListener("submit", async event => {
   const dailyTarget = (document.querySelector("#signup-focus")?.value || "").trim();
   const mantra = (document.querySelector("#signup-mantra")?.value || "").trim();
 
-  let authEmail = "";
-  if (rawIdentifier) {
-    authEmail = usernameToEmail(rawIdentifier);
-  } else if (authMode === "create") {
-    if (!displayName) {
-      authMessage.textContent = "Please enter your name or username.";
-      return;
-    }
-    authEmail = usernameToEmail(displayName);
-  } else {
-    authMessage.textContent = "Please enter your username or email.";
+  if (!email) {
+    authMessage.textContent = "Please enter your email.";
+    return;
+  }
+  if (authMode === "create" && !displayName) {
+    authMessage.textContent = "Please enter your name or ghost alias.";
     return;
   }
 
   authMessage.textContent = "Working...";
   try {
     if (authMode === "create") {
-      const credential = await createUserWithEmailAndPassword(auth, authEmail, password);
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: displayName || "Ghost Warrior" });
 
       const newProfile = {
@@ -826,7 +738,7 @@ authForm.addEventListener("submit", async event => {
         wakeUpTime,
         dailyTarget: dailyTarget || "45 min training + 2h deep focus",
         mantra: mantra || "Discipline is keeping a promise to yourself.",
-        hasCustomEmail: rawIdentifier.includes("@"),
+        email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -839,7 +751,7 @@ authForm.addEventListener("submit", async event => {
       }
       userProfile = newProfile;
     } else {
-      await signInWithEmailAndPassword(auth, authEmail, password);
+      await signInWithEmailAndPassword(auth, email, password);
     }
     authForm.reset();
   } catch (error) {
@@ -853,18 +765,14 @@ document.querySelector("#auth-switch").addEventListener("click", () => {
 });
 
 document.querySelector("#reset-password").addEventListener("click", async () => {
-  const rawIdentifier = (authForm.email?.value || "").trim();
-  if (!auth || !rawIdentifier) {
-    authMessage.textContent = "Enter your registered email address first, then request a reset link.";
-    return;
-  }
-  if (!rawIdentifier.includes("@")) {
-    authMessage.textContent = "Password reset requires your full email address (e.g. you@example.com).";
+  const email = (authForm.email?.value || "").trim();
+  if (!auth || !email) {
+    authMessage.textContent = "Enter your email first, then request a reset link.";
     return;
   }
   try {
-    await sendPasswordResetEmail(auth, rawIdentifier);
-    authMessage.textContent = `Password reset email sent to ${rawIdentifier}.`;
+    await sendPasswordResetEmail(auth, email);
+    authMessage.textContent = `Password reset email sent to ${email}.`;
   } catch (error) {
     authMessage.textContent = friendlyAuthError(error);
   }
@@ -905,31 +813,12 @@ content.addEventListener("click", async event => {
     return;
   }
 
-  if (event.target.id === "open-top-profile-modal") {
-    updateProfileUI();
-    if (profileDialog) profileDialog.showModal();
-    return;
-  }
-
   const action = event.target.closest("[data-action]");
   if (!action) return;
 
   if (action.dataset.action === "open-today") {
     activeTab = "today";
     render();
-  }
-
-  if (action.dataset.action === "profile-reset") {
-    if (!user?.email) {
-      showMessage("This account has no email address for password reset.", true);
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, user.email);
-      showMessage(`Password reset link sent to ${user.email}.`);
-    } catch (error) {
-      showMessage(friendlyAuthError(error), true);
-    }
   }
 
   if (action.dataset.action === "delete-habit") {
@@ -956,14 +845,9 @@ content.addEventListener("click", async event => {
   }
 });
 
-// In-page profile and rule form submissions
+// Rule form submissions
 content.addEventListener("submit", async event => {
   event.preventDefault();
-  if (event.target.id === "profile-inpage-form") {
-    await handleProfileSave(new FormData(event.target));
-    return;
-  }
-
   if (event.target.id !== "rule-form") return;
   const form = new FormData(event.target);
   const name = String(form.get("name") || "").trim();
