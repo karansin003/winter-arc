@@ -15,7 +15,7 @@
   <main class="frame">
     <section id="auth-view" class="auth-layout" aria-labelledby="auth-title">
       <div class="auth-intro">
-        <p class="eyebrow">OCT 01 — DEC 29 <span>·</span> 90 DAYS</p>
+        <p class="eyebrow">OCT 01 — DEC 31 <span>·</span> 92 DAYS</p>
         <h1>WINTER ARC<br><em>2026:</em><br>GHOST MODE</h1>
         <p class="intro-copy">A quieter feed. A stronger version of you. Track your work, one day at a time.</p>
         <div class="auth-stamp"><span class="stamp-dot"></span> YOUR ARC. YOUR ACCOUNT. YOUR DATA.</div>
@@ -24,38 +24,188 @@
         <p class="eyebrow" id="auth-eyebrow">YOUR PRIVATE TRACKER</p>
         <h2 id="auth-title">Sign in</h2>
         <p class="muted" id="auth-description">Pick up exactly where you left off.</p>
-        <div id="display-name-field" hidden><label for="display-name">Name</label><input id="display-name" name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="Your name"></div>
+
+        <!-- Detailed signup fields for basic information -->
+        <div id="signup-extra-fields" class="signup-extra-fields" hidden>
+          <label for="display-name">Full Name / Ghost Alias *</label>
+          <input id="display-name" name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="Your name (e.g. Karan Kumar)">
+
+          <label for="signup-goal">Primary Arc Goal</label>
+          <input id="signup-goal" name="primaryGoal" type="text" maxlength="120" placeholder="e.g. Build 5kg muscle + 10k steps daily">
+
+          <div class="form-row-2">
+            <div>
+              <label for="signup-wake">Wake-up Target</label>
+              <select id="signup-wake" name="wakeUpTime" class="custom-select">
+                <option value="05:00 AM" selected>05:00 AM (Classic)</option>
+                <option value="05:30 AM">05:30 AM</option>
+                <option value="06:00 AM">06:00 AM</option>
+                <option value="06:30 AM">06:30 AM</option>
+                <option value="07:00 AM">07:00 AM</option>
+              </select>
+            </div>
+            <div>
+              <label for="signup-focus">Daily Focus Target</label>
+              <input id="signup-focus" name="dailyTarget" type="text" maxlength="60" placeholder="e.g. 2h Deep Work / Study">
+            </div>
+          </div>
+
+          <label for="signup-mantra">Your Personal Rule / Mantra</label>
+          <input id="signup-mantra" name="mantra" type="text" maxlength="140" placeholder="e.g. Discipline is keeping a promise to yourself.">
+        </div>
+
         <label for="email">Email</label>
         <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
         <label for="password">Password</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required>
+        <div class="password-wrap">
+          <input id="password" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required>
+          <button type="button" class="password-toggle" id="toggle-password" aria-label="Show password" title="Toggle password visibility">
+            <svg class="eye-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path class="eye-shape" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle class="eye-pupil" cx="12" cy="12" r="3"></circle>
+              <line class="eye-slash" x1="2" y1="2" x2="22" y2="22" stroke="var(--orange)" stroke-width="2.2" style="display:none;"></line>
+            </svg>
+          </button>
+        </div>
+
         <p id="auth-message" class="message" role="status" aria-live="polite"></p>
         <button class="button button-primary auth-submit" type="submit" id="auth-submit">Sign in <span aria-hidden="true">↗</span></button>
-        <div class="auth-links"><button type="button" class="text-button" id="auth-switch">Create an account</button><button type="button" class="text-button" id="reset-password">Forgot password?</button></div>
+        <div class="auth-links">
+          <button type="button" class="text-button" id="auth-switch">Create an account</button>
+          <button type="button" class="text-button" id="reset-password">Forgot password?</button>
+        </div>
         <p class="setup-note" id="setup-note"></p>
       </form>
     </section>
 
     <section id="app-view" class="app-view" hidden>
       <header class="topbar">
-        <a class="wordmark" href="#today" aria-label="Winter Arc home"><span class="brand-mark">W</span><span>GHOST MODE <small>WINTER ARC / 2026</small></span></a>
-        <div class="account-tools"><span id="account-email" class="account-email"></span><button class="small-button sign-out-button" id="sign-out" type="button">Sign out</button></div>
+        <a class="wordmark" href="#today" aria-label="Winter Arc home">
+          <span class="brand-mark">W</span>
+          <span>GHOST MODE <small>WINTER ARC / 2026</small></span>
+        </a>
+        <div class="account-tools">
+          <!-- Professional Profile Trigger Button in Top Right -->
+          <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false" aria-haspopup="dialog" title="View profile and account">
+            <span class="avatar-badge" id="top-avatar">?</span>
+            <div class="profile-preview-text">
+              <span id="account-email" class="account-email">Signed in</span>
+              <span class="profile-status-sub"><span class="status-indicator"></span>Ghost Mode</span>
+            </div>
+            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <button class="small-button sign-out-button" id="sign-out" type="button" title="Sign out of account">Sign out</button>
+        </div>
       </header>
 
       <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy"><p class="eyebrow">90 DAYS. NO NOISE.</p><h1 id="hero-title">WINTER ARC<br><em>2026:</em> GHOST MODE</h1><p class="hero-subtitle">Show up when nobody's watching.</p></div>
-        <div class="countdown-panel"><div class="countdown-heading"><span class="live-dot"></span><span id="countdown-label">COUNTDOWN TO JAN 01</span></div><div class="countdown" aria-label="Countdown"><div><strong id="count-days">--</strong><span>DAYS</span></div><b>:</b><div><strong id="count-hours">--</strong><span>HOURS</span></div><b>:</b><div><strong id="count-minutes">--</strong><span>MINUTES</span></div></div><div class="global-progress"><div class="progress-label"><span>90-DAY ARC</span><strong id="global-percent">0%</strong></div><div class="progress-track"><span id="global-bar"></span></div></div></div>
+        <div class="hero-copy">
+          <p class="eyebrow">OCT 01 — DEC 31 <span>·</span> 92 DAYS</p>
+          <h1 id="hero-title">WINTER ARC<br><em>2026:</em> GHOST MODE</h1>
+          <p class="hero-subtitle">Show up when nobody's watching. The arc begins October 1st.</p>
+        </div>
+        <div class="countdown-panel">
+          <div class="countdown-heading"><span class="live-dot"></span><span id="countdown-label">COUNTDOWN TO JAN 01</span></div>
+          <div class="countdown" aria-label="Countdown">
+            <div><strong id="count-days">--</strong><span>DAYS</span></div>
+            <b>:</b>
+            <div><strong id="count-hours">--</strong><span>HOURS</span></div>
+            <b>:</b>
+            <div><strong id="count-minutes">--</strong><span>MINUTES</span></div>
+          </div>
+          <div class="global-progress">
+            <div class="progress-label"><span>OCT 01 — DEC 31 ARC</span><strong id="global-percent">0%</strong></div>
+            <div class="progress-track"><span id="global-bar"></span></div>
+          </div>
+        </div>
       </section>
 
       <nav class="tabs" aria-label="Tracker sections">
         <button type="button" class="tab active" data-tab="today">Today</button>
-        <button type="button" class="tab" data-tab="calendar">90-day grid</button>
+        <button type="button" class="tab" data-tab="calendar">92-day grid</button>
         <button type="button" class="tab" data-tab="habits">My rules</button>
         <button type="button" class="tab" data-tab="journal">Journal</button>
         <button type="button" class="tab" data-tab="profile">Profile</button>
       </nav>
       <section id="app-content" class="app-content" aria-live="polite"></section>
-      <footer class="footer"><span>PRIVATE BY DESIGN</span><span>SMALL PROMISES. KEPT DAILY.</span></footer>
+      <footer class="footer"><span>PRIVATE BY DESIGN</span><span>OCT 01 — DEC 31 · KEPT DAILY.</span></footer>
+
+      <!-- Modern Professional Profile Dialog Modal -->
+      <dialog id="profile-dialog" class="profile-dialog" aria-labelledby="dialog-profile-title">
+        <div class="dialog-card">
+          <div class="dialog-header">
+            <div>
+              <p class="eyebrow">YOUR PROFILE</p>
+              <h3 id="dialog-profile-title">Warrior Details</h3>
+            </div>
+            <button type="button" class="dialog-close" id="profile-close-btn" aria-label="Close profile">✕</button>
+          </div>
+
+          <div class="dialog-user-badge">
+            <div class="avatar-large" id="profile-avatar-large">?</div>
+            <div class="dialog-user-info">
+              <strong id="profile-header-name" class="dialog-user-name">Warrior</strong>
+              <span id="profile-header-email" class="dialog-user-email">user@example.com</span>
+              <span class="badge-ghost"><span class="status-indicator"></span>OCT 01 — DEC 31 · GHOST MODE</span>
+            </div>
+          </div>
+
+          <div class="profile-stats-grid">
+            <div class="stat-box">
+              <span class="stat-num" id="profile-stat-streak">0 🔥</span>
+              <span class="stat-lbl">CURRENT STREAK</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="profile-stat-perfect">0</span>
+              <span class="stat-lbl">PERFECT DAYS</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="profile-stat-pct">0%</span>
+              <span class="stat-lbl">ARC PROGRESS</span>
+            </div>
+          </div>
+
+          <form id="profile-modal-form" class="profile-modal-form">
+            <label for="p-name">Full Name / Ghost Alias *</label>
+            <input id="p-name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="Your name" required>
+
+            <label for="p-goal">Primary Arc Goal</label>
+            <input id="p-goal" name="primaryGoal" type="text" maxlength="120" placeholder="e.g. Build 5kg muscle + 10k steps daily">
+
+            <div class="form-row-2">
+              <div>
+                <label for="p-wake">Target Wake-up</label>
+                <select id="p-wake" name="wakeUpTime" class="custom-select">
+                  <option value="05:00 AM">05:00 AM (Classic)</option>
+                  <option value="05:30 AM">05:30 AM</option>
+                  <option value="06:00 AM">06:00 AM</option>
+                  <option value="06:30 AM">06:30 AM</option>
+                  <option value="07:00 AM">07:00 AM</option>
+                </select>
+              </div>
+              <div>
+                <label for="p-focus">Daily Focus Target</label>
+                <input id="p-focus" name="dailyTarget" type="text" maxlength="60" placeholder="e.g. 2h Deep Work / Training">
+              </div>
+            </div>
+
+            <label for="p-mantra">Personal Rule / Mantra</label>
+            <input id="p-mantra" name="mantra" type="text" maxlength="140" placeholder="e.g. Discipline is keeping a promise to yourself.">
+
+            <div class="dialog-meta-row">
+              <div><span>EMAIL</span><strong id="profile-email-meta">—</strong></div>
+              <div><span>MEMBER SINCE</span><strong id="profile-since-meta">—</strong></div>
+            </div>
+
+            <div class="dialog-actions">
+              <button class="button button-primary" type="submit" id="save-profile-btn">Save Profile Changes</button>
+              <button class="small-button" type="button" id="modal-reset-password">Send Password Reset</button>
+              <button class="small-button danger" type="button" id="modal-sign-out">Sign Out</button>
+            </div>
+          </form>
+        </div>
+      </dialog>
     </section>
   </main>
   <script type="module" src="app.js"></script>
