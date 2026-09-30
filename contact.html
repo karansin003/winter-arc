@@ -38,7 +38,7 @@
       "@type": "Organization",
       "name": "Winter Arc",
       "url": "https://arc-challenge.web.app",
-      "email": "support@arc-challenge.web.app"
+      "email": "karansin8672@gmail.com"
     }
   }
   </script>
@@ -125,7 +125,7 @@
           <h3>Official Support Inbox</h3>
           <p>You can also reach our engineering and community desks directly via email:</p>
           <p style="margin-top: 8px;">
-            <a href="mailto:support@arc-challenge.web.app" style="font-weight: 700; font-family: var(--mono);">support@arc-challenge.web.app</a>
+            <a href="mailto:karansin8672@gmail.com" style="font-weight: 700; font-family: var(--mono); color: var(--lime);">karansin8672@gmail.com</a>
           </p>
         </div>
 
@@ -254,19 +254,27 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Transmitting...';
 
-      // Simulate network confirmation and prepare mailto client fallback
+      const mailtoUrl = `mailto:karansin8672@gmail.com?subject=${encodeURIComponent('[Winter Arc Support] ' + subject + ' - ' + name)}&body=${encodeURIComponent('From: ' + name + ' (' + email + ')\nCategory: ' + subject + '\n\nMessage:\n' + message)}`;
+
+      // Confirm submission and launch direct email client to admin inbox
       setTimeout(() => {
         statusBox.innerHTML = `
-          <div class="recovery-success" style="padding: 14px 18px; border-radius: 6px; line-height: 1.6;">
-            <strong>Message Received!</strong><br>
-            Thank you, ${name}. Your inquiry regarding <em>"${subject}"</em> has been logged. Our desk will follow up at <strong>${email}</strong> within 24–48 hours.<br>
-            <small style="display: block; margin-top: 8px; color: #cbd5e1;">Need immediate help? You can also email us directly at <a href="mailto:support@arc-challenge.web.app?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}" style="color: var(--lime);">support@arc-challenge.web.app</a>.</small>
+          <div class="recovery-success" style="padding: 16px 20px; border-radius: 6px; line-height: 1.6; background: rgba(213,255,84,0.08); border: 1px solid var(--lime);">
+            <strong style="color: var(--lime); font-size: 14px;">✓ Inquiry Prepared for Admin!</strong><br>
+            Thank you, <strong>${name}</strong>. Your inquiry regarding <em>"${subject}"</em> is ready.<br>
+            <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+              <a href="${mailtoUrl}" class="button button-primary" style="padding: 8px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <span>✉️</span> Open Email & Send Directly to Admin →
+              </a>
+            </div>
+            <small style="display: block; margin-top: 10px; color: var(--muted);">Direct Admin Email: <a href="mailto:karansin8672@gmail.com" style="color: var(--lime); font-weight: 700;">karansin8672@gmail.com</a></small>
           </div>
         `;
+        window.location.href = mailtoUrl;
         submitBtn.disabled = false;
         submitBtn.textContent = 'Send Another Message';
         document.getElementById('contact-form').reset();
-      }, 700);
+      }, 500);
     });
   </script>
 </body>
