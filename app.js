@@ -1,10 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
+  getAuth,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  setPersistence,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {
   doc,
@@ -15,8 +19,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-const ARC_START = "2026-10-03";
-const ARC_END = "2027-01-01";
+const ARC_START = "2026-10-01";
+const ARC_END = "2026-12-29";
 const ARC_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CORE_HABITS = [
@@ -112,12 +116,13 @@ function getSelectedLabel() {
 
 function updateCountdown() {
   const target = new Date(2027, 0, 1, 0, 0, 0, 0).getTime();
-  const start = new Date(2026, 9, 3, 0, 0, 0, 0).getTime();
+  const start = parseDate(ARC_START).getTime();
+  const arcEnd = parseDate(addDays(ARC_END, 1)).getTime();
   const remaining = Math.max(0, target - Date.now());
   const days = Math.floor(remaining / DAY_MS);
   const hours = Math.floor(remaining % DAY_MS / (60 * 60 * 1000));
   const minutes = Math.floor(remaining % (60 * 60 * 1000) / (60 * 1000));
-  const percent = Math.max(0, Math.min(100, (Date.now() - start) / (target - start) * 100));
+  const percent = Math.max(0, Math.min(100, (Date.now() - start) / (arcEnd - start) * 100));
   document.querySelector("#count-days").textContent = String(days).padStart(2, "0");
   document.querySelector("#count-hours").textContent = String(hours).padStart(2, "0");
   document.querySelector("#count-minutes").textContent = String(minutes).padStart(2, "0");
@@ -159,7 +164,7 @@ function renderCalendar() {
     const label = `Day ${index + 1}, ${day}, ${isPerfect(day) ? "complete" : done ? `${dayPercent(day)} percent complete` : future ? "future" : "not started"}`;
     return `<button type="button" class="calendar-day ${status} ${future ? "future" : ""} ${selectedDate === day ? "selected" : ""}" data-select-day="${day}" aria-label="${label}" title="${label}">${index + 1}</button>`;
   }).join("");
-  return `<div class="content-heading"><div><p class="eyebrow">OCT 03 — DEC 31</p><h2>Your 90 days</h2></div><span class="date-label">Select a day to open its checklist</span></div>
+  return `<div class="content-heading"><div><p class="eyebrow">OCT 01 — DEC 29</p><h2>Your 90 days</h2></div><span class="date-label">Select a day to open its checklist</span></div>
     <section class="panel panel-pad"><div class="calendar-grid">${cells}</div><div class="calendar-legend"><span class="legend-item"><i class="legend-swatch complete"></i>All done</span><span class="legend-item"><i class="legend-swatch partial"></i>Partially done</span><span class="legend-item"><i class="legend-swatch"></i>Not done / future</span></div></section>
     <section class="panel panel-pad selected-day"><div class="content-heading"><div><p class="panel-kicker">SELECTED DAY</p><h2>${escapeHtml(getSelectedLabel())}</h2></div><button class="small-button" type="button" data-action="open-today">Open checklist</button></div><p class="muted">${completedCount(selectedDate)} of ${state.habits.length} rules completed · ${dayPercent(selectedDate)}%</p></section>`;
 }
@@ -174,13 +179,21 @@ function renderJournal() {
   return `<div class="content-heading"><div><p class="eyebrow">ONE LINE, NO FILTER</p><h2>Daily reflection</h2></div><span class="date-label">${escapeHtml(getSelectedLabel())}</span></div><section class="panel panel-pad"><label class="panel-kicker" for="journal-entry">WHAT WAS YOUR WIN TODAY?</label><textarea id="journal-entry" class="journal-input" maxlength="280" placeholder="One win. One lesson. One honest sentence." ${isPastOrToday(selectedDate) ? "" : "disabled"}>${escapeHtml(entry)}</textarea><div id="journal-status" class="journal-status">${isPastOrToday(selectedDate) ? "Saved privately to your account." : "Future day · journal is locked."}</div></section><p class="muted">Your journal is private to your signed-in account and synced to your Firebase profile.</p>`;
 }
 
+function renderProfile() {
+  const createdAt = user?.metadata?.creationTime;
+  const memberSince = createdAt ? new Date(createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "—";
+  return `<div class="content-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2>Profile</h2></div></div>
+    <section class="panel panel-pad profile-panel"><form id="profile-form" class="profile-form"><label for="profile-name">Name</label><input id="profile-name" name="name" type="text" maxlength="80" autocomplete="name" value="${escapeHtml(user?.displayName || "")}" placeholder="Your name" required><div class="profile-meta"><div><span>EMAIL</span><strong>${escapeHtml(user?.email || "—")}</strong></div><div><span>MEMBER SINCE</span><strong>${escapeHtml(memberSince)}</strong></div></div><button class="button button-primary" type="submit">Save profile</button></form>
+    <div class="profile-security"><div><strong>Password</strong><p class="muted">Forgot your password? Send a reset link to your account email.</p></div><button class="small-button" type="button" data-action="profile-reset">Send reset link</button></div></section>`;
+}
+
 function render() {
   document.querySelectorAll(".tab").forEach(tab => {
     const active = tab.dataset.tab === activeTab;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-current", active ? "page" : "false");
   });
-  content.innerHTML = ({ today: renderToday, calendar: renderCalendar, habits: renderHabits, journal: renderJournal })[activeTab]();
+  content.innerHTML = ({ today: renderToday, calendar: renderCalendar, habits: renderHabits, journal: renderJournal, profile: renderProfile })[activeTab]();
 }
 
 function cacheAndSync() {
@@ -219,11 +232,14 @@ function startUserData(currentUser) {
 
 function updateAuthMode() {
   const create = authMode === "create";
+  const nameField = document.querySelector("#display-name-field");
   document.querySelector("#auth-title").textContent = create ? "Create account" : "Sign in";
   document.querySelector("#auth-description").textContent = create ? "Your habits and journal sync privately across devices." : "Pick up exactly where you left off.";
   document.querySelector("#auth-submit").innerHTML = `${create ? "Create account" : "Sign in"} <span aria-hidden="true">↗</span>`;
   document.querySelector("#auth-switch").textContent = create ? "Already have an account? Sign in" : "Create an account";
   document.querySelector("#password").autocomplete = create ? "new-password" : "current-password";
+  nameField.hidden = !create;
+  document.querySelector("#display-name").required = create;
   authMessage.textContent = "";
 }
 
@@ -248,10 +264,14 @@ authForm.addEventListener("submit", async event => {
   if (!auth) return;
   const email = authForm.email.value.trim();
   const password = authForm.password.value;
+  const displayName = document.querySelector("#display-name").value.trim();
   authMessage.textContent = "Working...";
   try {
-    if (authMode === "create") await createUserWithEmailAndPassword(auth, email, password);
-    else await signInWithEmailAndPassword(auth, email, password);
+    if (authMode === "create") {
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(credential.user, { displayName });
+      document.querySelector("#account-email").textContent = displayName;
+    } else await signInWithEmailAndPassword(auth, email, password);
     authForm.reset();
   } catch (error) { authMessage.textContent = friendlyAuthError(error); }
 });
@@ -265,7 +285,10 @@ document.querySelector("#reset-password").addEventListener("click", async () => 
   try { await sendPasswordResetEmail(auth, email); authMessage.textContent = "Password reset email sent."; }
   catch (error) { authMessage.textContent = friendlyAuthError(error); }
 });
-document.querySelector("#sign-out").addEventListener("click", () => signOut(auth));
+document.querySelector("#sign-out").addEventListener("click", async () => {
+  try { await signOut(auth); }
+  catch (error) { showMessage(`Sign out failed: ${friendlyAuthError(error)}`, true); }
+});
 document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => {
   activeTab = tab.dataset.tab;
   render();
@@ -279,7 +302,7 @@ content.addEventListener("change", event => {
   cacheAndSync();
   render();
 });
-content.addEventListener("click", event => {
+content.addEventListener("click", async event => {
   const dayButton = event.target.closest("[data-select-day]");
   if (dayButton) {
     selectedDate = dayButton.dataset.selectDay;
@@ -289,6 +312,13 @@ content.addEventListener("click", event => {
   const action = event.target.closest("[data-action]");
   if (!action) return;
   if (action.dataset.action === "open-today") { activeTab = "today"; render(); }
+  if (action.dataset.action === "profile-reset") {
+    if (!user?.email) { showMessage("This account has no email address for password reset.", true); return; }
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      showMessage(`Password reset link sent to ${user.email}.`);
+    } catch (error) { showMessage(friendlyAuthError(error), true); }
+  }
   if (action.dataset.action === "delete-habit") {
     const habit = state.habits.find(item => item.id === action.dataset.id);
     if (habit && window.confirm(`Delete “${habit.name}” and its completion history?`)) {
@@ -311,9 +341,20 @@ content.addEventListener("click", event => {
     render();
   }
 });
-content.addEventListener("submit", event => {
-  if (event.target.id !== "rule-form") return;
+content.addEventListener("submit", async event => {
   event.preventDefault();
+  if (event.target.id === "profile-form") {
+    const name = String(new FormData(event.target).get("name") || "").trim();
+    if (!name || !auth.currentUser) return;
+    try {
+      await updateProfile(auth.currentUser, { displayName: name });
+      document.querySelector("#account-email").textContent = name;
+      showMessage("Profile saved.");
+      render();
+    } catch (error) { showMessage(`Profile update failed: ${friendlyAuthError(error)}`, true); }
+    return;
+  }
+  if (event.target.id !== "rule-form") return;
   const form = new FormData(event.target);
   const name = String(form.get("name") || "").trim();
   if (!name) return;
@@ -339,9 +380,11 @@ if (!firebaseReady()) {
   setupNote.textContent = "Setup required: add your Firebase web app values to firebase-config.js, enable Email/Password sign-in, then publish firestore.rules. See README.md.";
 } else {
   const firebaseApp = initializeApp(firebaseConfig);
-  auth = (await import("https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js")).getAuth(firebaseApp);
+  auth = getAuth(firebaseApp);
   db = getFirestore(firebaseApp);
   setupNote.textContent = "Each account has its own private tracker. Data syncs across your signed-in devices.";
+  try { await setPersistence(auth, browserLocalPersistence); }
+  catch { setupNote.textContent = "Your browser may not keep you signed in. Check its privacy or storage settings."; }
   onAuthStateChanged(auth, currentUser => {
     user = currentUser;
     if (!user) {
@@ -349,13 +392,16 @@ if (!firebaseReady()) {
       unsubscribeState = null;
       window.clearTimeout(saveTimer);
       state = initialState();
+      authMode = "signin";
+      updateAuthMode();
       appView.hidden = true;
       authView.hidden = false;
       return;
     }
     authView.hidden = true;
     appView.hidden = false;
-    document.querySelector("#account-email").textContent = user.email || "Signed in";
+    document.querySelector("#account-email").textContent = user.displayName || user.email || "Signed in";
+    document.querySelector("#account-email").title = user.email || "";
     selectedDate = clampDate(todayKey());
     startUserData(user);
     updateCountdown();
