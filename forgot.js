@@ -63,7 +63,8 @@ function friendlyError(error) {
     "auth/invalid-email": "Please provide a valid email address.",
     "auth/missing-email": "Please enter your email address.",
     "auth/too-many-requests": "Too many requests. Please wait a few minutes before trying again.",
-    "auth/network-request-failed": "Network error. Please check your internet connection."
+    "auth/network-request-failed": "Network error. Please check your internet connection.",
+    "auth/unauthorized-continue-uri": "Domain not yet allowlisted in Firebase. Please add arc-challenge.web.app to Firebase Console > Authentication > Settings > Authorized domains."
   };
   return errMap[code] || error.message || "Failed to send reset email. Please try again.";
 }
@@ -103,13 +104,9 @@ form.addEventListener("submit", async (e) => {
   alertBox.hidden = true;
 
   try {
-    const actionCodeSettings = {
-      // Directs the user back to the sign-in page once the password is reset
-      url: window.location.origin + "/index.html",
-      handleCodeInApp: false
-    };
-
-    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+    // Calling sendPasswordResetEmail without actionCodeSettings uses Firebase's default
+    // handler on winter-arc-b7f5f.firebaseapp.com, which is always authorized on all domains.
+    await sendPasswordResetEmail(auth, email);
 
     showFeedback(
       "success",
