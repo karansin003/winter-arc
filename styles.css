@@ -743,6 +743,19 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 /* ==========================================================================
    Universal Site Navigation & Header
    ========================================================================== */
+/* Authenticated dashboard session visibility rules: hide duplicate header and landing auth */
+html.has-active-session #global-site-header,
+body.user-authenticated #global-site-header,
+html.has-active-session #auth-view,
+body.user-authenticated #auth-view {
+  display: none !important;
+}
+
+html.has-active-session #app-view,
+body.user-authenticated #app-view {
+  display: block !important;
+}
+
 .site-header {
   display: flex;
   justify-content: space-between;

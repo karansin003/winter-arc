@@ -45,6 +45,7 @@ const QUOTES = [
 
 const authView = document.querySelector("#auth-view");
 const appView = document.querySelector("#app-view");
+const globalSiteHeader = document.querySelector("#global-site-header");
 const authForm = document.querySelector("#auth-form");
 const authMessage = document.querySelector("#auth-message");
 const setupNote = document.querySelector("#setup-note");
@@ -55,6 +56,8 @@ const profileCloseBtn = document.querySelector("#profile-close-btn");
 const profileModalForm = document.querySelector("#profile-modal-form");
 const passwordInput = document.querySelector("#password");
 const togglePasswordBtn = document.querySelector("#toggle-password");
+
+const SESSION_FLAG = "winter_arc_active_session";
 
 let auth;
 let db;
@@ -286,6 +289,32 @@ function updateProfileUI() {
       : "—";
   }
 }
+
+function initSessionRestore() {
+  const cachedUid = localStorage.getItem(SESSION_FLAG);
+  const isExplicitSignout = localStorage.getItem("winter_arc_explicit_signout") === "true";
+  if (cachedUid && !isExplicitSignout) {
+    document.documentElement.classList.add("has-active-session");
+    document.body.classList.add("user-authenticated");
+    if (globalSiteHeader) globalSiteHeader.hidden = true;
+    if (authView) authView.hidden = true;
+    if (appView) appView.hidden = false;
+    try {
+      const cachedData = localStorage.getItem(`winter-arc:${cachedUid}`);
+      if (cachedData) {
+        state = normalizeState(JSON.parse(cachedData));
+      }
+      const cachedProfile = localStorage.getItem(`winter-arc-profile:${cachedUid}`);
+      if (cachedProfile) {
+        userProfile = JSON.parse(cachedProfile);
+      }
+    } catch (e) {}
+    selectedDate = currentActiveDay();
+    render();
+    updateProfileUI();
+  }
+}
+initSessionRestore();
 
 function renderToday() {
   const date = selectedDate;
@@ -836,18 +865,29 @@ if (profileModalForm) {
   });
 }
 
-// Modal action buttons
+// Modal action buttons & Sign Out
+async function handleSignOut() {
+  if (profileDialog && profileDialog.open) profileDialog.close();
+  try {
+    localStorage.removeItem(SESSION_FLAG);
+    localStorage.setItem("winter_arc_explicit_signout", "true");
+    document.documentElement.classList.remove("has-active-session");
+    document.body.classList.remove("user-authenticated");
+    if (globalSiteHeader) globalSiteHeader.hidden = false;
+    if (appView) appView.hidden = true;
+    if (authView) authView.hidden = false;
+    authMode = "signin";
+    updateAuthMode();
+    if (auth) await signOut(auth);
+    showMessage("Signed out successfully.");
+  } catch (error) {
+    showMessage(`Sign out failed: ${friendlyAuthError(error)}`, true);
+  }
+}
 
 const modalSignOut = document.querySelector("#modal-sign-out");
 if (modalSignOut) {
-  modalSignOut.addEventListener("click", async () => {
-    if (profileDialog && profileDialog.open) profileDialog.close();
-    try {
-      await signOut(auth);
-    } catch (error) {
-      showMessage(`Sign out failed: ${friendlyAuthError(error)}`, true);
-    }
-  });
+  modalSignOut.addEventListener("click", handleSignOut);
 }
 
 // Auth submission (Sign in / Create Account)
@@ -873,9 +913,21 @@ authForm.addEventListener("submit", async event => {
 
   authMessage.textContent = "Working...";
   try {
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+    } catch {}
+
     if (authMode === "create") {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: displayName || "Ghost Warrior" });
+
+      localStorage.setItem(SESSION_FLAG, credential.user.uid);
+      localStorage.removeItem("winter_arc_explicit_signout");
+      document.documentElement.classList.add("has-active-session");
+      document.body.classList.add("user-authenticated");
+      if (globalSiteHeader) globalSiteHeader.hidden = true;
+      if (authView) authView.hidden = true;
+      if (appView) appView.hidden = false;
 
       const newProfile = {
         displayName: displayName || "Ghost Warrior",
@@ -895,8 +947,19 @@ authForm.addEventListener("submit", async event => {
         console.warn("Could not save initial profile doc:", err);
       }
       userProfile = newProfile;
+      user = credential.user;
+      startUserData(user);
     } else {
-      await signInWithEmailAndPassword(auth, email, password);
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      localStorage.setItem(SESSION_FLAG, credential.user.uid);
+      localStorage.removeItem("winter_arc_explicit_signout");
+      document.documentElement.classList.add("has-active-session");
+      document.body.classList.add("user-authenticated");
+      if (globalSiteHeader) globalSiteHeader.hidden = true;
+      if (authView) authView.hidden = true;
+      if (appView) appView.hidden = false;
+      user = credential.user;
+      startUserData(user);
     }
     authForm.reset();
   } catch (error) {
@@ -921,13 +984,7 @@ if (resetPasswordLink) {
   });
 }
 
-document.querySelector("#sign-out").addEventListener("click", async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    showMessage(`Sign out failed: ${friendlyAuthError(error)}`, true);
-  }
-});
+document.querySelector("#sign-out").addEventListener("click", handleSignOut);
 
 document.querySelectorAll(".tab").forEach(tab =>
   tab.addEventListener("click", () => {
@@ -1103,20 +1160,32 @@ if (!firebaseReady()) {
   onAuthStateChanged(auth, currentUser => {
     user = currentUser;
     if (!user) {
-      if (unsubscribeState) unsubscribeState();
-      if (unsubscribeProfile) unsubscribeProfile();
-      unsubscribeState = null;
-      unsubscribeProfile = null;
-      window.clearTimeout(saveTimer);
-      state = initialState();
-      userProfile = null;
-      authMode = "signin";
-      updateAuthMode();
-      appView.hidden = true;
-      authView.hidden = false;
+      const explicitSignout = localStorage.getItem("winter_arc_explicit_signout") === "true";
+      const hasSession = localStorage.getItem(SESSION_FLAG);
+      if (explicitSignout || !hasSession) {
+        if (unsubscribeState) unsubscribeState();
+        if (unsubscribeProfile) unsubscribeProfile();
+        unsubscribeState = null;
+        unsubscribeProfile = null;
+        window.clearTimeout(saveTimer);
+        state = initialState();
+        userProfile = null;
+        authMode = "signin";
+        updateAuthMode();
+        document.documentElement.classList.remove("has-active-session");
+        document.body.classList.remove("user-authenticated");
+        if (globalSiteHeader) globalSiteHeader.hidden = false;
+        appView.hidden = true;
+        authView.hidden = false;
+      }
       return;
     }
 
+    localStorage.setItem(SESSION_FLAG, user.uid);
+    localStorage.removeItem("winter_arc_explicit_signout");
+    document.documentElement.classList.add("has-active-session");
+    document.body.classList.add("user-authenticated");
+    if (globalSiteHeader) globalSiteHeader.hidden = true;
     authView.hidden = true;
     appView.hidden = false;
     selectedDate = currentActiveDay();

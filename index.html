@@ -57,6 +57,15 @@
     }
   }
   </script>
+
+  <!-- Instant Mobile Session Restore (Prevents login flicker on refresh) -->
+  <script>
+    try {
+      if (localStorage.getItem("winter_arc_active_session") && localStorage.getItem("winter_arc_explicit_signout") !== "true") {
+        document.documentElement.classList.add("has-active-session");
+      }
+    } catch (e) {}
+  </script>
 </head>
 
 <body>
@@ -241,6 +250,7 @@
           <a href="guide.html" class="nav-link" style="font-size: 11px;">Blueprint</a>
           <a href="about.html" class="nav-link" style="font-size: 11px;">About</a>
           <a href="faq.html" class="nav-link" style="font-size: 11px;">FAQ</a>
+          <a href="contact.html" class="nav-link" style="font-size: 11px;">Contact</a>
         </div>
 
         <div class="account-tools">
