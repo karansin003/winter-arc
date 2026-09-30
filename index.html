@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171a16">
+  <title>Winter Arc 2026: Ghost Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="frame">
+    <section id="auth-view" class="auth-layout" aria-labelledby="auth-title">
+      <div class="auth-intro">
+        <p class="eyebrow">OCT 03 — JAN 01 <span>·</span> 90 DAYS</p>
+        <h1>WINTER ARC<br><em>2026:</em><br>GHOST MODE</h1>
+        <p class="intro-copy">A quieter feed. A stronger version of you. Track your work, one day at a time.</p>
+        <div class="auth-stamp"><span class="stamp-dot"></span> YOUR ARC. YOUR ACCOUNT. YOUR DATA.</div>
+      </div>
+      <form id="auth-form" class="auth-panel">
+        <p class="eyebrow" id="auth-eyebrow">YOUR PRIVATE TRACKER</p>
+        <h2 id="auth-title">Sign in</h2>
+        <p class="muted" id="auth-description">Pick up exactly where you left off.</p>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required>
+        <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+        <button class="button button-primary auth-submit" type="submit" id="auth-submit">Sign in <span aria-hidden="true">↗</span></button>
+        <div class="auth-links"><button type="button" class="text-button" id="auth-switch">Create an account</button><button type="button" class="text-button" id="reset-password">Forgot password?</button></div>
+        <p class="setup-note" id="setup-note"></p>
+      </form>
+    </section>
+
+    <section id="app-view" class="app-view" hidden>
+      <header class="topbar">
+        <a class="wordmark" href="#today" aria-label="Winter Arc home"><span class="brand-mark">W</span><span>GHOST MODE <small>WINTER ARC / 2026</small></span></a>
+        <div class="account-tools"><span id="account-email" class="account-email"></span><button class="icon-button" id="sign-out" type="button" aria-label="Sign out" title="Sign out">↗</button></div>
+      </header>
+
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy"><p class="eyebrow">90 DAYS. NO NOISE.</p><h1 id="hero-title">WINTER ARC<br><em>2026:</em> GHOST MODE</h1><p class="hero-subtitle">Show up when nobody's watching.</p></div>
+        <div class="countdown-panel"><div class="countdown-heading"><span class="live-dot"></span><span id="countdown-label">COUNTDOWN TO JAN 01</span></div><div class="countdown" aria-label="Countdown"><div><strong id="count-days">--</strong><span>DAYS</span></div><b>:</b><div><strong id="count-hours">--</strong><span>HOURS</span></div><b>:</b><div><strong id="count-minutes">--</strong><span>MINUTES</span></div></div><div class="global-progress"><div class="progress-label"><span>90-DAY ARC</span><strong id="global-percent">0%</strong></div><div class="progress-track"><span id="global-bar"></span></div></div></div>
+      </section>
+
+      <nav class="tabs" aria-label="Tracker sections">
+        <button type="button" class="tab active" data-tab="today">Today</button>
+        <button type="button" class="tab" data-tab="calendar">90-day grid</button>
+        <button type="button" class="tab" data-tab="habits">My rules</button>
+        <button type="button" class="tab" data-tab="journal">Journal</button>
+      </nav>
+      <section id="app-content" class="app-content" aria-live="polite"></section>
+      <footer class="footer"><span>PRIVATE BY DESIGN</span><span>SMALL PROMISES. KEPT DAILY.</span></footer>
+    </section>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
