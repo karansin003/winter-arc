@@ -261,7 +261,72 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 .journal-input { min-height: 150px; resize: vertical; font-size: 14px; line-height: 1.6; }
 .journal-status { min-height: 18px; margin-top: 7px; color: var(--muted); font-size: 11px; }
 .empty { padding: 24px; border: 1px dashed var(--line); color: var(--muted); font-size: 13px; text-align: center; }
-.footer { display: flex; justify-content: space-between; gap: 12px; padding: 18px 0 25px; border-top: 1px solid var(--line); color: #767d70; font-size: 9px; }
+.footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 0 25px; border-top: 1px solid var(--line); color: #767d70; font-size: 9px; flex-wrap: wrap; }
+.footer-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.footer-links a { color: #8a9484; text-decoration: none; transition: color .15s ease; }
+.footer-links a:hover { color: var(--lime); text-decoration: underline; }
+.footer-sep { color: #42473e; }
+
+/* Google AdSense Bottom Ad Unit & Policy Styling */
+.adsense-bottom-container {
+  margin: 32px 0 16px;
+  padding: 10px 14px;
+  background: rgba(22, 25, 21, 0.7);
+  border: 1px dashed rgba(213, 255, 84, 0.25);
+  border-radius: 8px;
+  text-align: center;
+}
+.adsense-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.adsense-slot {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.adsense-placeholder {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.adsense-placeholder .ad-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(213, 255, 84, 0.12);
+  color: var(--lime);
+  font: 700 10px var(--mono);
+  text-transform: uppercase;
+}
+.adsense-placeholder p {
+  margin: 4px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.adsense-placeholder small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.adsense-placeholder code {
+  color: var(--lime);
+  font-family: var(--mono);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 100; max-width: min(380px, calc(100% - 40px)); padding: 12px 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-raised); color: var(--paper); font-size: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); animation: toastIn .2s ease; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 

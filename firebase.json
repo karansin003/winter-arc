@@ -18,6 +18,14 @@
           "destination": "/forgot.html"
         },
         {
+          "source": "/privacy",
+          "destination": "/privacy.html"
+        },
+        {
+          "source": "/terms",
+          "destination": "/terms.html"
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -39,6 +47,14 @@
         {
           "source": "/forgot",
           "destination": "/forgot.html"
+        },
+        {
+          "source": "/privacy",
+          "destination": "/privacy.html"
+        },
+        {
+          "source": "/terms",
+          "destination": "/terms.html"
         },
         {
           "source": "**",
