@@ -8,6 +8,11 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#0c0d0e">
 
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
   <!-- Google AdSense Verification Tag -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6097963574439559"
     crossorigin="anonymous"></script>
@@ -100,6 +105,15 @@
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin {
+      display: inline-block;
+      animation: spin 0.85s linear infinite;
     }
 
     .admin-tools {
@@ -573,7 +587,7 @@
       <div style="margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <label style="font: 11px var(--mono); color: var(--muted); margin: 0;">PASSWORD</label>
-          <a href="forgot.html?email=karansin8672@gmail.com" target="_blank" style="font: 11px var(--mono); color: var(--lime); text-decoration: none;">Forgot password? ↗</a>
+          <a href="/forgot?email=karansin8672@gmail.com" target="_blank" style="font: 11px var(--mono); color: var(--lime); text-decoration: none;">Forgot password? ↗</a>
         </div>
         <div class="password-wrap">
           <input type="password" id="admin-password" placeholder="Enter password of karansin8672@gmail.com" required
@@ -778,7 +792,7 @@
   <div id="web-toast-container" class="web-toast-container" aria-live="polite"></div>
 
   <script src="site.js"></script>
-  <script type="module" src="admin.js?v=20261001-1"></script>
+  <script type="module" src="admin.js?v=20261001-2"></script>
 </body>
 
 </html>

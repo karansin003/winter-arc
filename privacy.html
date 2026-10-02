@@ -8,15 +8,28 @@
   <meta name="description" content="Official Privacy Policy for Winter Arc (Ghost Mode). Learn how your habit data, account information, and cookies are managed with strict privacy-by-design standards.">
   <link rel="canonical" href="https://arc-challenge.web.app/privacy">
 
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
   <!-- Open Graph / Social Sharing -->
+  <meta property="og:site_name" content="Winter Arc 2026">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://arc-challenge.web.app/privacy">
   <meta property="og:title" content="Privacy Policy · Winter Arc">
   <meta property="og:description" content="Official Privacy Policy covering account data, Google AdSense cookies, Firebase security, GDPR, and CCPA rights.">
-  <meta property="og:image" content="https://arc-challenge.web.app/screenshot.png">
+  <meta property="og:image" content="https://arc-challenge.web.app/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Winter Arc Privacy Policy">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Privacy Policy · Winter Arc">
+  <meta name="twitter:description" content="Official Privacy Policy for Winter Arc Ghost Mode.">
+  <meta name="twitter:image" content="https://arc-challenge.web.app/og-image.png">
 
-  <!-- Google AdSense Code -->
+  <!-- Google AdSense Account Verification & Script -->
+  <meta name="google-adsense-account" content="ca-pub-6097963574439559">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6097963574439559"
      crossorigin="anonymous"></script>
 
@@ -24,7 +37,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261001-7">
+  <link rel="stylesheet" href="styles.css?v=20261001-9">
+
+  <!-- BreadcrumbList Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://arc-challenge.web.app/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Privacy Policy",
+        "item": "https://arc-challenge.web.app/privacy"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -44,10 +79,10 @@
 
       <ul class="site-nav-list" role="navigation" aria-label="Main Navigation">
         <li><a class="nav-link" href="/">Tracker</a></li>
-        <li><a class="nav-link" href="guide.html">Blueprint Guide</a></li>
-        <li><a class="nav-link" href="about.html">About</a></li>
-        <li><a class="nav-link" href="faq.html">FAQ</a></li>
-        <li><a class="nav-link" href="contact.html">Contact</a></li>
+        <li><a class="nav-link" href="/guide">Blueprint Guide</a></li>
+        <li><a class="nav-link" href="/about">About</a></li>
+        <li><a class="nav-link" href="/faq">FAQ</a></li>
+        <li><a class="nav-link" href="/contact">Contact</a></li>
         <li><a class="nav-cta-btn" href="/">Open App →</a></li>
       </ul>
     </header>
@@ -126,7 +161,7 @@
       <p>All data communications are encrypted in transit using industry-standard TLS/HTTPS protocols. Data stored within Google Cloud Firestore is protected by strict declarative security rules ensuring that only authenticated owners can read or write to their dedicated document path.</p>
 
       <h2>9. Privacy Contact Desk</h2>
-      <p>For any privacy-related inquiries, data export requests, or erasure petitions, please reach out to our privacy officer at: <a href="mailto:karansin8672@gmail.com" style="color: var(--lime);">karansin8672@gmail.com</a> or via our <a href="contact.html" style="color: var(--lime);">Contact Page</a>.</p>
+      <p>For any privacy-related inquiries, data export requests, or erasure petitions, please reach out to our privacy officer at: <a href="mailto:karansin8672@gmail.com" style="color: var(--lime);">karansin8672@gmail.com</a> or via our <a href="/contact" style="color: var(--lime);">Contact Page</a>.</p>
     </article>
 
     <!-- Professional Multi-Column Footer -->
@@ -155,27 +190,27 @@
             <li><a href="/">92-Day Grid</a></li>
             <li><a href="/">Habit Builder</a></li>
             <li><a href="/">Daily Journal</a></li>
-            <li><a href="forgot.html">Account Recovery</a></li>
+            <li><a href="/forgot">Account Recovery</a></li>
           </ul>
         </div>
 
         <div>
           <h4 class="footer-heading">Resources</h4>
           <ul class="footer-links-list">
-            <li><a href="guide.html">The 92-Day Blueprint</a></li>
-            <li><a href="about.html">About Ghost Mode</a></li>
-            <li><a href="faq.html">Frequently Asked Questions</a></li>
-            <li><a href="contact.html">Contact & Support</a></li>
+            <li><a href="/guide">The 92-Day Blueprint</a></li>
+            <li><a href="/about">About Ghost Mode</a></li>
+            <li><a href="/faq">Frequently Asked Questions</a></li>
+            <li><a href="/contact">Contact & Support</a></li>
           </ul>
         </div>
 
         <div>
           <h4 class="footer-heading">Legal & Compliance</h4>
           <ul class="footer-links-list">
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="terms.html">Terms of Service</a></li>
-            <li><a href="disclaimer.html">Health & Fitness Disclaimer</a></li>
-            <li><a href="ads.txt">ads.txt Verification</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/disclaimer">Health & Fitness Disclaimer</a></li>
+            <li><a href="/ads.txt">ads.txt Verification</a></li>
           </ul>
         </div>
       </div>

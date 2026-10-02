@@ -8,15 +8,28 @@
   <meta name="description" content="Get in touch with the Winter Arc team for technical support, account assistance, feedback, or inquiries. Fast, friendly response.">
   <link rel="canonical" href="https://arc-challenge.web.app/contact">
 
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
   <!-- Open Graph / Social Sharing -->
+  <meta property="og:site_name" content="Winter Arc 2026">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://arc-challenge.web.app/contact">
   <meta property="og:title" content="Contact Us · Winter Arc Support">
   <meta property="og:description" content="Reach our support and development team for assistance with your 92-day Winter Arc tracker.">
-  <meta property="og:image" content="https://arc-challenge.web.app/screenshot.png">
+  <meta property="og:image" content="https://arc-challenge.web.app/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Contact Winter Arc Support">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Contact Us · Winter Arc Support">
+  <meta name="twitter:description" content="Reach our support and development team for assistance with your 92-day Winter Arc tracker.">
+  <meta name="twitter:image" content="https://arc-challenge.web.app/og-image.png">
 
-  <!-- Google AdSense Code -->
+  <!-- Google AdSense Account Verification & Script -->
+  <meta name="google-adsense-account" content="ca-pub-6097963574439559">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6097963574439559"
      crossorigin="anonymous"></script>
 
@@ -24,22 +37,49 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261001-7">
+  <link rel="stylesheet" href="styles.css?v=20261001-9">
 
-  <!-- ContactPage Structured Data -->
+  <!-- ContactPage & BreadcrumbList Structured Data (schema.org) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "name": "Winter Arc Support",
-    "url": "https://arc-challenge.web.app/contact",
-    "description": "Customer support and developer contact for Winter Arc Ghost Mode.",
-    "mainEntity": {
-      "@type": "Organization",
-      "name": "Winter Arc",
-      "url": "https://arc-challenge.web.app",
-      "email": "karansin8672@gmail.com"
-    }
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://arc-challenge.web.app/contact#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://arc-challenge.web.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Contact",
+            "item": "https://arc-challenge.web.app/contact"
+          }
+        ]
+      },
+      {
+        "@type": "ContactPage",
+        "@id": "https://arc-challenge.web.app/contact#contactpage",
+        "name": "Winter Arc Support",
+        "url": "https://arc-challenge.web.app/contact",
+        "description": "Customer support and developer contact for Winter Arc Ghost Mode.",
+        "mainEntity": {
+          "@type": "Organization",
+          "name": "Winter Arc",
+          "url": "https://arc-challenge.web.app/",
+          "email": "karansin8672@gmail.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://arc-challenge.web.app/logo.png"
+          }
+        }
+      }
+    ]
   }
   </script>
 </head>
@@ -61,10 +101,10 @@
 
       <ul class="site-nav-list" role="navigation" aria-label="Main Navigation">
         <li><a class="nav-link" href="/">Tracker</a></li>
-        <li><a class="nav-link" href="guide.html">Blueprint Guide</a></li>
-        <li><a class="nav-link" href="about.html">About</a></li>
-        <li><a class="nav-link" href="faq.html">FAQ</a></li>
-        <li><a class="nav-link active" href="contact.html">Contact</a></li>
+        <li><a class="nav-link" href="/guide">Blueprint Guide</a></li>
+        <li><a class="nav-link" href="/about">About</a></li>
+        <li><a class="nav-link" href="/faq">FAQ</a></li>
+        <li><a class="nav-link active" href="/contact">Contact</a></li>
         <li><a class="nav-cta-btn" href="/">Open App →</a></li>
       </ul>
     </header>
@@ -134,7 +174,7 @@
           <h3>Check the Knowledge Base</h3>
           <p>Most common questions regarding habit logging, streak flame mechanics, and password resets are already documented in our FAQ.</p>
           <p style="margin-top: 8px;">
-            <a href="faq.html">Browse Frequently Asked Questions →</a>
+            <a href="/faq">Browse Frequently Asked Questions →</a>
           </p>
         </div>
 
@@ -143,26 +183,24 @@
           <h3>Lost Password?</h3>
           <p>If you cannot log into your account, you can initiate a self-service reset link immediately without waiting for support.</p>
           <p style="margin-top: 8px;">
-            <a href="forgot.html">Go to Account Recovery →</a>
+            <a href="/forgot">Go to Account Recovery →</a>
           </p>
         </div>
       </aside>
     </div>
 
     <!-- Natural Editorial Ad Placement Placeholder -->
-    <aside class="ad-editorial-break" aria-label="Sponsored Advertisement">
+    <aside class="ad-editorial-break" aria-label="Advertisement">
       <div class="adsense-header-bar">
         <div class="adsense-label">
           <span class="adsense-indicator"></span>
-          Sponsored Advertisement
+          Advertisement
         </div>
-        <div class="adsense-partner-tag">Google AdSense Partner Unit</div>
       </div>
       <div class="adsense-slot" style="min-height: 90px;">
         <div class="adsense-placeholder">
-          <span class="ad-badge">★ Google AdSense Verified Slot ★</span>
-          <p>Responsive Editorial Display Ad · 728×90 / Auto Format</p>
-          <small>Compliant non-intrusive ad placement matching Google Publisher Guidelines.</small>
+          <p>Responsive Display Advertisement Slot</p>
+          <small>Compliant non-intrusive placement matching Google Publisher Guidelines.</small>
         </div>
       </div>
     </aside>
@@ -193,27 +231,27 @@
             <li><a href="/">92-Day Grid</a></li>
             <li><a href="/">Habit Builder</a></li>
             <li><a href="/">Daily Journal</a></li>
-            <li><a href="forgot.html">Account Recovery</a></li>
+            <li><a href="/forgot">Account Recovery</a></li>
           </ul>
         </div>
 
         <div>
           <h4 class="footer-heading">Resources</h4>
           <ul class="footer-links-list">
-            <li><a href="guide.html">The 92-Day Blueprint</a></li>
-            <li><a href="about.html">About Ghost Mode</a></li>
-            <li><a href="faq.html">Frequently Asked Questions</a></li>
-            <li><a href="contact.html">Contact & Support</a></li>
+            <li><a href="/guide">The 92-Day Blueprint</a></li>
+            <li><a href="/about">About Ghost Mode</a></li>
+            <li><a href="/faq">Frequently Asked Questions</a></li>
+            <li><a href="/contact">Contact & Support</a></li>
           </ul>
         </div>
 
         <div>
           <h4 class="footer-heading">Legal & Compliance</h4>
           <ul class="footer-links-list">
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="terms.html">Terms of Service</a></li>
-            <li><a href="disclaimer.html">Health & Fitness Disclaimer</a></li>
-            <li><a href="ads.txt">ads.txt Verification</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/disclaimer">Health & Fitness Disclaimer</a></li>
+            <li><a href="/ads.txt">ads.txt Verification</a></li>
           </ul>
         </div>
       </div>
@@ -226,84 +264,5 @@
   </main>
 
   <script src="site.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-    import {
-      addDoc,
-      collection,
-      getFirestore,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { firebaseConfig } from "./firebase-config.js";
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Client-side Contact Form Handler with Cloud Firestore & Direct Email
-    document.getElementById('contact-form')?.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const statusBox = document.getElementById('contact-status');
-      const submitBtn = document.getElementById('contact-submit');
-      const formData = new FormData(this);
-
-      // Check anti-spam honeypot
-      if (formData.get('website_trap_field')) {
-        statusBox.innerHTML = '<div class="recovery-success">Message received. Thank you!</div>';
-        return;
-      }
-
-      const name = String(formData.get('name') || '').trim();
-      const email = String(formData.get('email') || '').trim();
-      const subject = String(formData.get('subject') || '').trim();
-      const message = String(formData.get('message') || '').trim();
-
-      if (!name || !email || !message) {
-        statusBox.innerHTML = '<div class="recovery-error">Please complete all required fields.</div>';
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Transmitting to Admin...';
-
-      // 1. Log ticket into Cloud Firestore so it appears in Admin Command Center instantly
-      try {
-        await addDoc(collection(db, "support_requests"), {
-          userId: auth.currentUser ? auth.currentUser.uid : null,
-          userName: name,
-          userEmail: email,
-          category: subject,
-          message: message,
-          status: "pending",
-          createdAt: serverTimestamp()
-        });
-      } catch (err) {
-        console.warn("Could not save to support_requests in Firestore:", err);
-      }
-
-      const mailtoUrl = `mailto:karansin8672@gmail.com?subject=${encodeURIComponent('[Winter Arc Support] ' + subject + ' - ' + name)}&body=${encodeURIComponent('From: ' + name + ' (' + email + ')\nCategory: ' + subject + '\n\nMessage:\n' + message)}`;
-
-      // 2. Confirm submission and launch direct email client to admin inbox
-      setTimeout(() => {
-        statusBox.innerHTML = `
-          <div class="recovery-success" style="padding: 16px 20px; border-radius: 6px; line-height: 1.6; background: rgba(213,255,84,0.08); border: 1px solid var(--lime);">
-            <strong style="color: var(--lime); font-size: 14px;">✓ Inquiry Dispatched to Admin!</strong><br>
-            Thank you, <strong>${name}</strong>. Your inquiry regarding <em>"${subject}"</em> has been logged in the Admin Command Center.<br>
-            <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
-              <a href="${mailtoUrl}" class="button button-primary" style="padding: 8px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                <span>✉️</span> Open Email & Send Directly to Admin →
-              </a>
-            </div>
-            <small style="display: block; margin-top: 10px; color: var(--muted);">Direct Admin Email: <a href="mailto:karansin8672@gmail.com" style="color: var(--lime); font-weight: 700;">karansin8672@gmail.com</a></small>
-          </div>
-        `;
-        window.location.href = mailtoUrl;
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Another Message';
-        document.getElementById('contact-form').reset();
-      }, 500);
-    });
-  </script>
 </body>
 </html>

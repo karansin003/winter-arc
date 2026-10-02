@@ -683,6 +683,7 @@ function startUserData(currentUser) {
       firstSnapshot = false;
       render();
       updateProfileUI();
+      updateDirectoryUser(currentUser);
     },
     error => showMessage(`Could not load your data: ${error.message}`, true)
   );
@@ -714,6 +715,7 @@ function startUserData(currentUser) {
       }
       updateProfileUI();
       if (activeTab === "profile") render();
+      updateDirectoryUser(currentUser);
     },
     err => {
       console.warn("Could not load cloud profile:", err);
@@ -829,6 +831,7 @@ async function handleProfileSave(formData) {
     ]);
 
     user = auth.currentUser;
+    updateDirectoryUser(user);
     showMessage("Profile saved successfully!");
   } catch (error) {
     console.warn("Cloud save warning:", error);
@@ -1078,11 +1081,22 @@ async function updateDirectoryUser(currentUser) {
       }
     } catch {}
 
+    let name = userProfile?.displayName || currentUser.displayName || "";
+    if (!name) {
+      try {
+        const cached = localStorage.getItem(`winter-arc-profile:${currentUser.uid}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.displayName) name = parsed.displayName;
+        }
+      } catch {}
+    }
+
     const dirRef = doc(db, "directory_users", currentUser.uid);
     await setDoc(dirRef, {
       uid: currentUser.uid,
       email: currentUser.email || "",
-      displayName: userProfile?.displayName || currentUser.displayName || "Ghost Warrior",
+      displayName: name || "Ghost Warrior",
       currentStreak: streakCount,
       completedDays: completedDays,
       lastActive: serverTimestamp()
@@ -1222,9 +1236,9 @@ if (resetPasswordLink) {
     const email = (authForm.email?.value || "").trim();
     if (email) {
       e.preventDefault();
-      window.location.href = `forgot.html?email=${encodeURIComponent(email)}`;
+      window.location.href = `/forgot?email=${encodeURIComponent(email)}`;
     }
-    // If empty, normal <a href="forgot.html"> navigation takes over seamlessly
+    // If empty, normal <a href="/forgot"> navigation takes over seamlessly
   });
 }
 

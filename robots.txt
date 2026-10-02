@@ -1,6 +1,8 @@
 User-agent: *
 Disallow: /admin
 Disallow: /admin.html
+Disallow: /forgot
+Disallow: /forgot.html
 Allow: /
 
 User-agent: Mediapartners-Google

@@ -17,6 +17,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -85,10 +86,12 @@ function showAuthGate() {
   dashboard.style.display = "none";
 }
 
-function showDashboard(adminUser) {
+async function showDashboard(adminUser) {
   authGate.style.display = "none";
   dashboard.style.display = "block";
+  await syncAdminToDirectory(adminUser);
   startRealtimeListeners();
+  await refreshAdminData(false);
 }
 
 // Password Visibility Toggle
@@ -146,9 +149,8 @@ if (signoutBtn) {
 
 // Refresh Handler
 if (refreshBtn) {
-  refreshBtn.addEventListener("click", () => {
-    showToast("Refreshing Data", "Syncing all Firestore records...");
-    startRealtimeListeners();
+  refreshBtn.addEventListener("click", async () => {
+    await refreshAdminData(true);
   });
 }
 
@@ -171,6 +173,12 @@ tabButtons.forEach(btn => {
         tabSections[key].style.display = key === tab ? "block" : "none";
       }
     });
+
+    if (tab === "users") {
+      renderUsers();
+    } else if (tab === "inquiries") {
+      renderInquiries();
+    }
   });
 });
 
@@ -193,6 +201,144 @@ if (usersSearch) {
   usersSearch.addEventListener("input", () => renderUsers());
 }
 
+// Auto-register Super Admin to Directory
+async function syncAdminToDirectory(adminUser) {
+  if (!adminUser) return;
+  try {
+    const adminDocRef = doc(db, "directory_users", adminUser.uid);
+    await setDoc(adminDocRef, {
+      uid: adminUser.uid,
+      email: adminUser.email || ADMIN_EMAIL,
+      displayName: adminUser.displayName || "Super Admin (Karan)",
+      role: "admin",
+      lastActive: serverTimestamp()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Could not sync admin to directory:", err);
+  }
+}
+
+// Auto-discover users from support requests if not present in directory
+function mergeInquiriesIntoUsers() {
+  const existingUids = new Set(allUsers.map(u => u.uid || u.id));
+  const existingEmails = new Set(allUsers.map(u => (u.email || "").toLowerCase()).filter(Boolean));
+
+  allInquiries.forEach(inq => {
+    const uid = inq.userId;
+    const email = (inq.userEmail || "").toLowerCase();
+
+    if (uid && !existingUids.has(uid)) {
+      existingUids.add(uid);
+      if (email) existingEmails.add(email);
+      allUsers.push({
+        id: uid,
+        uid: uid,
+        displayName: inq.userName || "Participant",
+        email: inq.userEmail || "",
+        currentStreak: 0,
+        completedDays: 0,
+        lastActive: inq.createdAt,
+        isGuest: false
+      });
+    } else if (!uid && email && !existingEmails.has(email)) {
+      existingEmails.add(email);
+      allUsers.push({
+        id: inq.id,
+        uid: "",
+        displayName: inq.userName || "Guest Inquiry",
+        email: inq.userEmail,
+        currentStreak: 0,
+        completedDays: 0,
+        lastActive: inq.createdAt,
+        isGuest: true
+      });
+    }
+  });
+}
+
+// Direct Cloud Sync and Active Refresh
+async function refreshAdminData(manual = false) {
+  if (refreshBtn) {
+    refreshBtn.disabled = true;
+    refreshBtn.innerHTML = `<span class="spin">🔄</span> Syncing...`;
+  }
+
+  if (manual) {
+    showToast("Refreshing Data", "Syncing all Firestore records from Cloud...");
+    if (usersTableBody && allUsers.length === 0) {
+      usersTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 36px; color: var(--muted); font: 12px var(--mono);">
+            <span class="spin">🔄</span> Querying latest records from Cloud Firestore...
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+  try {
+    // 1. Fetch Directory Users actively from server
+    const usersRef = collection(db, "directory_users");
+    const usersSnap = await getDocs(usersRef);
+    const usersList = [];
+    let totalStreaks = 0;
+
+    usersSnap.forEach(docSnap => {
+      const u = {
+        id: docSnap.id,
+        ...docSnap.data()
+      };
+      usersList.push(u);
+      if (u.currentStreak && Number(u.currentStreak) > 0) {
+        totalStreaks += Number(u.currentStreak);
+      }
+    });
+
+    allUsers = usersList;
+
+    // 2. Fetch Support Requests
+    const reqRef = collection(db, "support_requests");
+    const reqQuery = query(reqRef, orderBy("createdAt", "desc"));
+    const reqSnap = await getDocs(reqQuery);
+
+    allInquiries = [];
+    reqSnap.forEach(docSnap => {
+      allInquiries.push({
+        id: docSnap.id,
+        ...docSnap.data()
+      });
+    });
+
+    // Auto-discover users who contacted support
+    mergeInquiriesIntoUsers();
+
+    // Recompute metrics
+    totalStreaks = allUsers.reduce((sum, u) => sum + (Number(u.currentStreak) || 0), 0);
+    metricUsersCount.textContent = allUsers.length;
+    metricStreaksCount.textContent = totalStreaks;
+    tabUsersBadge.textContent = allUsers.length;
+
+    updateInquiryMetrics();
+    renderInquiries();
+    renderUsers();
+    updateBroadcastRecipients();
+
+    if (manual) {
+      showToast("Sync Complete", `Loaded ${allUsers.length} user(s) and ${allInquiries.length} support ticket(s).`);
+    }
+  } catch (err) {
+    console.error("Refresh error:", err);
+    if (manual) {
+      showToast("Sync Error", err.message || "Failed to sync records.");
+    }
+  } finally {
+    if (refreshBtn) {
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = `🔄 Refresh`;
+    }
+  }
+}
+
 // Start Real-Time Listeners
 function startRealtimeListeners() {
   if (unsubscribeInquiries) unsubscribeInquiries();
@@ -211,11 +357,14 @@ function startRealtimeListeners() {
           ...docSnap.data()
         });
       });
+      mergeInquiriesIntoUsers();
       updateInquiryMetrics();
       renderInquiries();
     }, err => {
       console.warn("Could not listen to support requests:", err);
-      inquiriesList.innerHTML = `<div style="padding: 24px; color: #ff3b30;">Firestore error: ${escapeHtml(err.message)}</div>`;
+      if (inquiriesList) {
+        inquiriesList.innerHTML = `<div style="padding: 24px; color: #ff3b30; text-align: center;">Firestore error: ${escapeHtml(err.message)}</div>`;
+      }
     });
   } catch (err) {
     console.error("Error setting inquiries listener:", err);
@@ -225,7 +374,7 @@ function startRealtimeListeners() {
   try {
     const usersRef = collection(db, "directory_users");
     unsubscribeUsers = onSnapshot(usersRef, snapshot => {
-      allUsers = [];
+      const usersList = [];
       let totalStreaks = 0;
 
       snapshot.forEach(docSnap => {
@@ -233,12 +382,16 @@ function startRealtimeListeners() {
           id: docSnap.id,
           ...docSnap.data()
         };
-        allUsers.push(u);
+        usersList.push(u);
         if (u.currentStreak && Number(u.currentStreak) > 0) {
           totalStreaks += Number(u.currentStreak);
         }
       });
 
+      allUsers = usersList;
+      mergeInquiriesIntoUsers();
+
+      totalStreaks = allUsers.reduce((sum, u) => sum + (Number(u.currentStreak) || 0), 0);
       metricUsersCount.textContent = allUsers.length;
       metricStreaksCount.textContent = totalStreaks;
       tabUsersBadge.textContent = allUsers.length;
@@ -247,7 +400,9 @@ function startRealtimeListeners() {
       renderUsers();
     }, err => {
       console.warn("Could not listen to directory users:", err);
-      usersTableBody.innerHTML = `<tr><td colspan="6" style="padding: 24px; color: #ff3b30;">Error loading users: ${escapeHtml(err.message)}</td></tr>`;
+      if (usersTableBody) {
+        usersTableBody.innerHTML = `<tr><td colspan="6" style="padding: 24px; color: #ff3b30; text-align: center;">Error loading users: ${escapeHtml(err.message)}</td></tr>`;
+      }
     });
   } catch (err) {
     console.error("Error setting users listener:", err);
@@ -490,33 +645,59 @@ function renderUsers() {
   if (filtered.length === 0) {
     usersTableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: var(--muted);">
-          No users found matching query.
+        <td colspan="6" style="text-align: center; padding: 48px 20px; color: var(--muted);">
+          <div style="font-size: 32px; margin-bottom: 10px;">👥</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--paper); margin-bottom: 6px;">
+            ${queryTerm ? 'No users matching "' + escapeHtml(queryTerm) + '"' : 'No Users in Directory Yet'}
+          </div>
+          <p style="font: 12px var(--mono); color: var(--muted); max-width: 440px; margin: 0 auto 18px; line-height: 1.6;">
+            ${queryTerm ? 'Try adjusting your search criteria.' : 'Users sync here in real-time as soon as they log into the app, update profiles, or submit support tickets.'}
+          </p>
+          <button type="button" class="small-button" id="force-users-refresh-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span>🔄</span> Force Sync from Cloud
+          </button>
         </td>
       </tr>
     `;
+    const forceBtn = document.querySelector("#force-users-refresh-btn");
+    if (forceBtn) {
+      forceBtn.addEventListener("click", () => refreshAdminData(true));
+    }
     return;
   }
 
   usersTableBody.innerHTML = filtered.map(u => {
     let lastActiveStr = "Recently";
-    if (u.lastActive && u.lastActive.toDate) {
-      lastActiveStr = u.lastActive.toDate().toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+    if (u.lastActive) {
+      try {
+        const d = u.lastActive.toDate ? u.lastActive.toDate() : new Date(u.lastActive);
+        if (!isNaN(d.getTime())) {
+          lastActiveStr = d.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        }
+      } catch {}
     }
 
-    const streak = u.currentStreak || 0;
-    const days = u.completedDays || 0;
+    const streak = Number(u.currentStreak) || 0;
+    const days = Number(u.completedDays) || 0;
+    const isAdminUser = (u.email && u.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || u.role === "admin";
+    const userUid = u.uid || u.id || "";
 
     return `
       <tr>
         <td>
-          <div style="font-weight: 700; color: var(--paper);">${escapeHtml(u.displayName || "Ghost Warrior")}</div>
-          <div style="font: 10px var(--mono); color: var(--muted);">${escapeHtml((u.uid || u.id || '').substring(0, 12))}...</div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div style="font-weight: 700; color: var(--paper);">${escapeHtml(u.displayName || "Ghost Warrior")}</div>
+            ${isAdminUser ? '<span style="font: 9px var(--mono); font-weight: 700; background: rgba(213,255,84,0.18); color: var(--lime); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(213,255,84,0.35);">ADMIN</span>' : ''}
+            ${u.isGuest ? '<span style="font: 9px var(--mono); font-weight: 700; background: rgba(255,159,10,0.15); color: #ff9f0a; padding: 2px 6px; border-radius: 4px;">GUEST</span>' : ''}
+          </div>
+          <div style="font: 10px var(--mono); color: var(--muted); cursor: pointer;" title="UID: ${escapeHtml(userUid)}">
+            ${escapeHtml(userUid.substring(0, 16))}${userUid.length > 16 ? '...' : ''}
+          </div>
         </td>
         <td style="font-family: var(--mono); font-size: 12px; color: var(--lime);">${escapeHtml(u.email || "No email")}</td>
         <td>
@@ -527,7 +708,7 @@ function renderUsers() {
         <td>${days} / 92</td>
         <td style="font: 11px var(--mono); color: var(--muted);">${escapeHtml(lastActiveStr)}</td>
         <td>
-          <button type="button" class="small-button" data-action="notify-user" data-uid="${u.uid || u.id}" data-name="${escapeHtml(u.displayName || u.email)}">
+          <button type="button" class="small-button" data-action="notify-user" data-uid="${escapeHtml(userUid)}" data-name="${escapeHtml(u.displayName || u.email || 'User')}">
             ✉️ Notify
           </button>
         </td>

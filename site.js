@@ -23,7 +23,7 @@
     banner.setAttribute('aria-label', 'Cookie and Privacy Notice');
     banner.innerHTML = `
       <p class="cookie-text">
-        We respect your privacy. Winter Arc uses essential cookies to preserve your session and anonymized analytics/ad tags to maintain this free service. Learn more in our <a href="privacy.html">Privacy Policy</a>.
+        We respect your privacy. Winter Arc uses essential cookies to preserve your session and anonymized analytics/ad tags to maintain this free service. Learn more in our <a href="/privacy">Privacy Policy</a>.
       </p>
       <div class="cookie-actions">
         <button type="button" class="cookie-btn-accept" id="consent-accept-btn">Accept</button>

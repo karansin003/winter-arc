@@ -8,14 +8,28 @@
   <meta name="description" content="Discover the mission, philosophy, and architectural principles behind Winter Arc Ghost Mode. 92 days of radical personal discipline from October 1 to December 31.">
   <link rel="canonical" href="https://arc-challenge.web.app/about">
 
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
   <!-- Open Graph / Social Sharing -->
+  <meta property="og:site_name" content="Winter Arc 2026">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://arc-challenge.web.app/about">
   <meta property="og:title" content="About Winter Arc · 92-Day Ghost Mode Protocol">
   <meta property="og:description" content="Learn why thousands enter Ghost Mode each winter. 92 days of uninterrupted discipline, private tracking, and physical mastery.">
+  <meta property="og:image" content="https://arc-challenge.web.app/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="About Winter Arc Ghost Mode">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About Winter Arc · 92-Day Ghost Mode Protocol">
+  <meta name="twitter:description" content="The mission, philosophy, and architectural principles behind Winter Arc Ghost Mode.">
+  <meta name="twitter:image" content="https://arc-challenge.web.app/og-image.png">
 
-  <!-- Google AdSense Code -->
+  <!-- Google AdSense Account Verification & Script -->
+  <meta name="google-adsense-account" content="ca-pub-6097963574439559">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6097963574439559"
      crossorigin="anonymous"></script>
 
@@ -23,26 +37,48 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261001-7">
+  <link rel="stylesheet" href="styles.css?v=20261001-9">
 
-  <!-- Structured Data: Organization & AboutPage -->
+  <!-- Structured Data: Organization, AboutPage & BreadcrumbList (schema.org) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "AboutPage",
-    "name": "About Winter Arc Ghost Mode",
-    "url": "https://arc-challenge.web.app/about",
-    "description": "The philosophy, origins, and team mission behind the 92-day Winter Arc Ghost Mode challenge.",
-    "mainEntity": {
-      "@type": "Organization",
-      "name": "Winter Arc Project",
-      "url": "https://arc-challenge.web.app",
-      "logo": "https://arc-challenge.web.app/logo.png",
-      "founder": {
-        "@type": "Person",
-        "name": "Winter Arc Engineering Team"
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://arc-challenge.web.app/about#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://arc-challenge.web.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About",
+            "item": "https://arc-challenge.web.app/about"
+          }
+        ]
+      },
+      {
+        "@type": "AboutPage",
+        "@id": "https://arc-challenge.web.app/about#aboutpage",
+        "name": "About Winter Arc Ghost Mode",
+        "url": "https://arc-challenge.web.app/about",
+        "description": "The philosophy, origins, and team mission behind the 92-day Winter Arc Ghost Mode challenge.",
+        "mainEntity": {
+          "@type": "Organization",
+          "name": "Winter Arc Project",
+          "url": "https://arc-challenge.web.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://arc-challenge.web.app/logo.png"
+          }
+        }
       }
-    }
+    ]
   }
   </script>
 </head>
@@ -64,10 +100,10 @@
 
       <ul class="site-nav-list" role="navigation" aria-label="Main Navigation">
         <li><a class="nav-link" href="/">Tracker</a></li>
-        <li><a class="nav-link" href="guide.html">Blueprint Guide</a></li>
-        <li><a class="nav-link active" href="about.html">About</a></li>
-        <li><a class="nav-link" href="faq.html">FAQ</a></li>
-        <li><a class="nav-link" href="contact.html">Contact</a></li>
+        <li><a class="nav-link" href="/guide">Blueprint Guide</a></li>
+        <li><a class="nav-link active" href="/about">About</a></li>
+        <li><a class="nav-link" href="/faq">FAQ</a></li>
+        <li><a class="nav-link" href="/contact">Contact</a></li>
         <li><a class="nav-cta-btn" href="/">Open App →</a></li>
       </ul>
     </header>
@@ -138,19 +174,17 @@
       </div>
 
       <!-- Natural Editorial Ad Placement Placeholder -->
-      <aside class="ad-editorial-break" aria-label="Sponsored Advertisement">
+      <aside class="ad-editorial-break" aria-label="Advertisement">
         <div class="adsense-header-bar">
           <div class="adsense-label">
             <span class="adsense-indicator"></span>
-            Sponsored Advertisement
+            Advertisement
           </div>
-          <div class="adsense-partner-tag">Google AdSense Partner Unit</div>
         </div>
         <div class="adsense-slot" style="min-height: 90px;">
           <div class="adsense-placeholder">
-            <span class="ad-badge">★ Google AdSense Verified Slot ★</span>
-            <p>Responsive Editorial Display Ad · 728×90 / Auto Format</p>
-            <small>Compliant non-intrusive ad placement matching Google Publisher Guidelines.</small>
+            <p>Responsive Display Advertisement Slot</p>
+            <small>Compliant non-intrusive placement matching Google Publisher Guidelines.</small>
           </div>
         </div>
       </aside>
@@ -198,27 +232,27 @@
             <li><a href="/">92-Day Grid</a></li>
             <li><a href="/">Habit Builder</a></li>
             <li><a href="/">Daily Journal</a></li>
-            <li><a href="forgot.html">Account Recovery</a></li>
+            <li><a href="/forgot">Account Recovery</a></li>
           </ul>
         </div>
 
         <div>
           <h4 class="footer-heading">Resources</h4>
           <ul class="footer-links-list">
-            <li><a href="guide.html">The 92-Day Blueprint</a></li>
-            <li><a href="about.html">About Ghost Mode</a></li>
-            <li><a href="faq.html">Frequently Asked Questions</a></li>
-            <li><a href="contact.html">Contact & Support</a></li>
+            <li><a href="/guide">The 92-Day Blueprint</a></li>
+            <li><a href="/about">About Ghost Mode</a></li>
+            <li><a href="/faq">Frequently Asked Questions</a></li>
+            <li><a href="/contact">Contact & Support</a></li>
           </ul>
         </div>
 
         <div>
           <h4 class="footer-heading">Legal & Compliance</h4>
           <ul class="footer-links-list">
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="terms.html">Terms of Service</a></li>
-            <li><a href="disclaimer.html">Health & Fitness Disclaimer</a></li>
-            <li><a href="ads.txt">ads.txt Verification</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/disclaimer">Health & Fitness Disclaimer</a></li>
+            <li><a href="/ads.txt">ads.txt Verification</a></li>
           </ul>
         </div>
       </div>
