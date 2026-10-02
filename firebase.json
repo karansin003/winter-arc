@@ -41,6 +41,10 @@
           "destination": "/admin.html"
         },
         {
+          "source": "/winter-arc-tracker",
+          "destination": "/winter-arc-tracker.html"
+        },
+        {
           "source": "/guide",
           "destination": "/guide.html"
         },
@@ -114,6 +118,10 @@
         {
           "source": "/admin",
           "destination": "/admin.html"
+        },
+        {
+          "source": "/winter-arc-tracker",
+          "destination": "/winter-arc-tracker.html"
         },
         {
           "source": "/guide",
