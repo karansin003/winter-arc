@@ -76,11 +76,11 @@ const btnBackToLogin = document.querySelector("#btn-back-to-login");
 
 let verifyCooldownTimer = null;
 
-function showVerificationScreen(email) {
+function showVerificationScreen(email, keepFeedback = false) {
   if (authForm) authForm.hidden = true;
   if (verificationPanel) verificationPanel.hidden = false;
   if (verifyUserEmail) verifyUserEmail.textContent = email || auth?.currentUser?.email || "your email";
-  if (verifyFeedback) verifyFeedback.hidden = true;
+  if (!keepFeedback && verifyFeedback) verifyFeedback.hidden = true;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -844,8 +844,9 @@ function friendlyAuthError(error) {
     "auth/user-disabled": "This account has been disabled. Please contact support.",
     "auth/weak-password": "Use a stronger password with at least 6 characters.",
     "auth/invalid-email": "Please enter a valid email address.",
-    "auth/too-many-requests": "Too many attempts. Try again in a little while.",
-    "auth/network-request-failed": "Network error. Check your internet connection."
+    "auth/too-many-requests": "Too many email requests. Firebase is rate-limiting; please wait 1-2 minutes.",
+    "auth/network-request-failed": "Network error. Check your internet connection.",
+    "auth/quota-exceeded": "Firebase daily email quota exceeded. Please try again tomorrow or contact admin."
   };
   return messages[error?.code] || error?.message || "An authentication error occurred.";
 }
@@ -968,14 +969,7 @@ async function handleResendVerification(email, cachedPassword, buttonEl) {
       return;
     }
 
-    try {
-      await sendEmailVerification(cred.user, {
-        url: window.location.origin + "/?verified=true",
-        handleCodeInApp: false
-      });
-    } catch {
-      await sendEmailVerification(cred.user);
-    }
+    await sendEmailVerification(cred.user);
     await signOut(auth);
 
     showAuthAlert(
@@ -1422,23 +1416,23 @@ authForm.addEventListener("submit", async event => {
         console.warn("Could not save initial profile doc:", err);
       }
 
+      if (authForm.password) authForm.password.value = "";
+      showVerificationScreen(email, true);
+
       // Send Firebase Email Verification link
       try {
-        await sendEmailVerification(credential.user, {
-          url: window.location.origin + "/?verified=true",
-          handleCodeInApp: false
-        });
-      } catch (actionErr) {
-        try {
-          await sendEmailVerification(credential.user);
-        } catch (verifyErr) {
-          console.warn("sendEmailVerification fallback failed:", verifyErr);
-        }
+        await sendEmailVerification(credential.user);
+        showVerifyFeedback(
+          "success",
+          `Verification email sent to ${email}!\n\nCheck your Inbox and Spam/Junk folder (Sender: noreply@winter-arc-b7f5f.firebaseapp.com). Click the link in the email, then click "I've Verified My Email" below.`
+        );
+      } catch (verifyErr) {
+        console.error("sendEmailVerification error:", verifyErr);
+        showVerifyFeedback(
+          "error",
+          `Could not send verification email: ${friendlyAuthError(verifyErr)}. Please click "Resend Verification Email" below.`
+        );
       }
-
-      if (authForm.password) authForm.password.value = "";
-      showVerificationScreen(email);
-      showVerifyFeedback("success", `Verification link has been sent to ${email}. Please check your inbox and click the verification link.`);
       return;
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
@@ -1591,16 +1585,12 @@ if (btnResendVerification) {
     btnResendVerification.textContent = "Sending Verification...";
 
     try {
-      try {
-        await sendEmailVerification(auth.currentUser, {
-          url: window.location.origin + "/?verified=true",
-          handleCodeInApp: false
-        });
-      } catch {
-        await sendEmailVerification(auth.currentUser);
-      }
+      await sendEmailVerification(auth.currentUser);
 
-      showVerifyFeedback("success", `Verification email resent to ${auth.currentUser.email}! Please check your inbox and spam folder.`);
+      showVerifyFeedback(
+        "success",
+        `Verification email resent to ${auth.currentUser.email}! Please check your Inbox and Spam/Junk folder.`
+      );
       
       // Start 60s cooldown
       let remaining = 60;
@@ -1620,6 +1610,7 @@ if (btnResendVerification) {
     } catch (err) {
       btnResendVerification.disabled = false;
       btnResendVerification.textContent = "🔄 Resend Verification Email";
+      console.error("Resend error:", err);
       showVerifyFeedback("error", `Could not resend email: ${friendlyAuthError(err)}`);
     }
   });
@@ -1874,7 +1865,10 @@ if (!firebaseReady()) {
         if (globalSiteHeader) globalSiteHeader.hidden = false;
         if (appView) appView.hidden = true;
         if (authView) authView.hidden = false;
-        showVerificationScreen(currentUser.email);
+        if (!verificationPanel || verificationPanel.hidden) {
+          showVerificationScreen(currentUser.email);
+          showVerifyFeedback("warning", "Please check your inbox or spam folder and verify your email to access your tracker.");
+        }
         return;
       }
     }
