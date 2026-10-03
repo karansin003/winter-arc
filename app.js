@@ -67,6 +67,51 @@ const profileModalForm = document.querySelector("#profile-modal-form");
 const passwordInput = document.querySelector("#password");
 const togglePasswordBtn = document.querySelector("#toggle-password");
 
+const verificationPanel = document.querySelector("#verification-panel");
+const verifyUserEmail = document.querySelector("#verify-user-email");
+const verifyFeedback = document.querySelector("#verify-feedback");
+const btnCheckVerified = document.querySelector("#btn-check-verified");
+const btnResendVerification = document.querySelector("#btn-resend-verification");
+const btnBackToLogin = document.querySelector("#btn-back-to-login");
+
+let verifyCooldownTimer = null;
+
+function showVerificationScreen(email) {
+  if (authForm) authForm.hidden = true;
+  if (verificationPanel) verificationPanel.hidden = false;
+  if (verifyUserEmail) verifyUserEmail.textContent = email || auth?.currentUser?.email || "your email";
+  if (verifyFeedback) verifyFeedback.hidden = true;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function hideVerificationScreen() {
+  if (verificationPanel) verificationPanel.hidden = true;
+  if (authForm) authForm.hidden = false;
+  if (verifyFeedback) verifyFeedback.hidden = true;
+  if (verifyCooldownTimer) {
+    clearInterval(verifyCooldownTimer);
+    verifyCooldownTimer = null;
+  }
+}
+
+function showVerifyFeedback(type, message) {
+  if (!verifyFeedback) return;
+  verifyFeedback.hidden = false;
+  verifyFeedback.className = `recovery-box recovery-${type}`;
+  const icon = type === "success"
+    ? `<span style="color:var(--lime);font-size:18px;">✓</span>`
+    : type === "warning"
+    ? `<span style="color:#fbbf24;font-size:18px;">⚠️</span>`
+    : `<span style="color:var(--orange);font-size:18px;">✕</span>`;
+
+  verifyFeedback.innerHTML = `
+    <div class="recovery-icon">${icon}</div>
+    <div class="recovery-body">
+      <p style="margin:0;font-size:13px;line-height:1.5;">${escapeHtml(message)}</p>
+    </div>
+  `;
+}
+
 const SESSION_FLAG = "winter_arc_active_session";
 
 let auth;
@@ -1391,55 +1436,20 @@ authForm.addEventListener("submit", async event => {
         }
       }
 
-      // Unverified user MUST NOT enter the app. Sign out immediately.
-      await signOut(auth);
-      localStorage.removeItem(SESSION_FLAG);
-      localStorage.setItem("winter_arc_explicit_signout", "true");
-      document.documentElement.classList.remove("has-active-session");
-      document.body.classList.remove("user-authenticated");
-
-      // Switch to signin view with email prefilled
-      authMode = "signin";
-      updateAuthMode();
-      if (authForm.email) authForm.email.value = email;
       if (authForm.password) authForm.password.value = "";
-
-      showAuthAlert(
-        "success",
-        "Verification Email Sent! ✉️",
-        `We've sent an activation link to <strong>${escapeHtml(email)}</strong>.<br>` +
-        `Please check your inbox (and Spam folder) and click the link to verify your account before logging in.`,
-        {
-          allowResend: true,
-          email: email,
-          password: password,
-          cooldown: 45
-        }
-      );
+      showVerificationScreen(email);
+      showVerifyFeedback("success", `Verification link has been sent to ${email}. Please check your inbox and click the verification link.`);
+      return;
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
 
+      // Reload user to verify freshest verification state
+      await credential.user.reload();
+
       // Check if user's email is verified
       if (!credential.user.emailVerified) {
-        await signOut(auth);
-        localStorage.removeItem(SESSION_FLAG);
-        localStorage.setItem("winter_arc_explicit_signout", "true");
-        document.documentElement.classList.remove("has-active-session");
-        document.body.classList.remove("user-authenticated");
-        if (globalSiteHeader) globalSiteHeader.hidden = false;
-        if (authView) authView.hidden = false;
-        if (appView) appView.hidden = true;
-
-        showAuthAlert(
-          "warning",
-          "Email Not Verified",
-          `Your account for <strong>${escapeHtml(email)}</strong> is not verified yet.<br>Please open your verification email and click the link before logging in.`,
-          {
-            allowResend: true,
-            email: email,
-            password: password
-          }
-        );
+        showVerificationScreen(credential.user.email || email);
+        showVerifyFeedback("warning", "Your email is not verified yet. Please check your inbox and click the verification link.");
         return;
       }
 
@@ -1511,8 +1521,129 @@ authForm.addEventListener("submit", async event => {
 document.querySelector("#auth-switch").addEventListener("click", () => {
   authMode = authMode === "signin" ? "create" : "signin";
   hideAuthAlert();
+  hideVerificationScreen();
   updateAuthMode();
 });
+
+// Verification Screen Button Listeners
+if (btnCheckVerified) {
+  btnCheckVerified.addEventListener("click", async () => {
+    btnCheckVerified.disabled = true;
+    const originalText = btnCheckVerified.innerHTML;
+    btnCheckVerified.innerHTML = `Checking Verification... <span class="spin">⏳</span>`;
+
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+      }
+
+      if (auth.currentUser && auth.currentUser.emailVerified) {
+        // Double check database status
+        const dirSnap = await getDoc(doc(db, "directory_users", auth.currentUser.uid));
+        if (dirSnap.exists()) {
+          const dirData = dirSnap.data();
+          if (dirData.isSuspended === true || dirData.status === "suspended") {
+            await signOut(auth);
+            hideVerificationScreen();
+            showAuthAlert("warning", "Account Suspended", "Your account has been suspended by the administrator.");
+            return;
+          }
+          if (dirData.isDeleted === true || dirData.status === "deleted") {
+            await signOut(auth);
+            hideVerificationScreen();
+            showAuthAlert("error", "Account Not Found", "Your account has been deleted by the administrator.");
+            return;
+          }
+        }
+
+        // Email verified successfully!
+        localStorage.setItem(SESSION_FLAG, auth.currentUser.uid);
+        localStorage.removeItem("winter_arc_explicit_signout");
+        document.documentElement.classList.add("has-active-session");
+        document.body.classList.add("user-authenticated");
+        if (globalSiteHeader) globalSiteHeader.hidden = true;
+        if (authView) authView.hidden = true;
+        if (appView) appView.hidden = false;
+        user = auth.currentUser;
+        startUserData(user);
+        hideVerificationScreen();
+        showMessage("🎉 Email verified successfully! Welcome to Winter Arc.");
+      } else {
+        showVerifyFeedback("warning", "Your email is not verified yet. Please check your inbox and click the verification link.");
+      }
+    } catch (err) {
+      showVerifyFeedback("error", `Verification check error: ${friendlyAuthError(err)}`);
+    } finally {
+      btnCheckVerified.disabled = false;
+      btnCheckVerified.innerHTML = originalText;
+    }
+  });
+}
+
+if (btnResendVerification) {
+  btnResendVerification.addEventListener("click", async () => {
+    if (!auth.currentUser) {
+      showVerifyFeedback("error", "Session expired. Please click Back to Login and sign in again.");
+      return;
+    }
+
+    btnResendVerification.disabled = true;
+    btnResendVerification.textContent = "Sending Verification...";
+
+    try {
+      try {
+        await sendEmailVerification(auth.currentUser, {
+          url: window.location.origin + "/?verified=true",
+          handleCodeInApp: false
+        });
+      } catch {
+        await sendEmailVerification(auth.currentUser);
+      }
+
+      showVerifyFeedback("success", `Verification email resent to ${auth.currentUser.email}! Please check your inbox and spam folder.`);
+      
+      // Start 60s cooldown
+      let remaining = 60;
+      btnResendVerification.textContent = `Resend available in ${remaining}s`;
+      if (verifyCooldownTimer) clearInterval(verifyCooldownTimer);
+      verifyCooldownTimer = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(verifyCooldownTimer);
+          verifyCooldownTimer = null;
+          btnResendVerification.disabled = false;
+          btnResendVerification.textContent = "🔄 Resend Verification Email";
+        } else {
+          btnResendVerification.textContent = `Resend available in ${remaining}s`;
+        }
+      }, 1000);
+    } catch (err) {
+      btnResendVerification.disabled = false;
+      btnResendVerification.textContent = "🔄 Resend Verification Email";
+      showVerifyFeedback("error", `Could not resend email: ${friendlyAuthError(err)}`);
+    }
+  });
+}
+
+if (btnBackToLogin) {
+  btnBackToLogin.addEventListener("click", async () => {
+    const savedEmail = auth.currentUser?.email || (authForm.email?.value || "");
+    if (auth) {
+      try {
+        await signOut(auth);
+      } catch {}
+    }
+    hideVerificationScreen();
+    authMode = "signin";
+    updateAuthMode();
+    if (authForm.email && savedEmail) {
+      authForm.email.value = savedEmail;
+    }
+    if (authForm.password) {
+      authForm.password.value = "";
+    }
+  });
+}
 
 const resetPasswordLink = document.querySelector("#reset-password");
 if (resetPasswordLink) {
@@ -1731,26 +1862,21 @@ if (!firebaseReady()) {
       });
   }
 
-  onAuthStateChanged(auth, currentUser => {
-    if (currentUser && !currentUser.emailVerified) {
-      signOut(auth).catch(() => {});
-      localStorage.removeItem(SESSION_FLAG);
-      localStorage.setItem("winter_arc_explicit_signout", "true");
-      document.documentElement.classList.remove("has-active-session");
-      document.body.classList.remove("user-authenticated");
-      if (globalSiteHeader) globalSiteHeader.hidden = false;
-      if (appView) appView.hidden = true;
-      if (authView) authView.hidden = false;
-      showAuthAlert(
-        "warning",
-        "Email Verification Required",
-        `Please verify your email (<strong>${escapeHtml(currentUser.email || "your email")}</strong>) before logging into your Winter Arc tracker.`,
-        {
-          allowResend: true,
-          email: currentUser.email || ""
-        }
-      );
-      return;
+  onAuthStateChanged(auth, async currentUser => {
+    if (currentUser) {
+      try {
+        await currentUser.reload();
+      } catch {}
+
+      if (!currentUser.emailVerified) {
+        document.documentElement.classList.remove("has-active-session");
+        document.body.classList.remove("user-authenticated");
+        if (globalSiteHeader) globalSiteHeader.hidden = false;
+        if (appView) appView.hidden = true;
+        if (authView) authView.hidden = false;
+        showVerificationScreen(currentUser.email);
+        return;
+      }
     }
 
     user = currentUser;

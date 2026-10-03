@@ -104,9 +104,39 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.button { border: 0; border-radius: 4px; padding: 12px 16px; cursor: pointer; font-weight: 800; transition: transform .16s ease, filter .16s ease; }
+.button { border: 0; border-radius: 4px; padding: 12px 16px; cursor: pointer; font-weight: 800; transition: transform .16s ease, filter .16s ease; font-family: var(--sans); }
 .button:hover { transform: translateY(-1px); filter: brightness(1.07); }
 .button-primary { background: var(--lime); color: var(--ink); }
+.button-secondary { background: var(--panel-raised); color: var(--paper); border: 1px solid var(--line); }
+.button-secondary:hover { border-color: var(--lime); color: var(--paper); }
+.button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; filter: none; }
+.verification-badge-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(213, 255, 84, 0.06);
+  border: 1px solid rgba(213, 255, 84, 0.25);
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+.verification-mail-icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.verification-label {
+  display: block;
+  font: 10px var(--mono);
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+.verification-email-text {
+  font: 700 14px var(--mono);
+  color: var(--lime);
+  word-break: break-all;
+}
 .auth-submit { display: flex; width: 100%; justify-content: space-between; align-items: center; margin-top: 18px; }
 .auth-links { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; }
 .text-button { padding: 0; border: 0; background: none; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

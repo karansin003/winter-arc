@@ -45,7 +45,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261003-1">
+  <link rel="stylesheet" href="styles.css?v=20261003-3">
 
   <!-- Structured Data: WebSite & WebApplication (schema.org) -->
   <script type="application/ld+json">
@@ -211,6 +211,46 @@
         </div>
         <p class="setup-note" id="setup-note"></p>
       </form>
+
+      <!-- Dedicated Email Verification Panel -->
+      <section id="verification-panel" class="auth-panel" hidden aria-labelledby="verify-heading">
+        <p class="eyebrow" style="color: var(--lime);">ACCOUNT ACTIVATION</p>
+        <h2 id="verify-heading" style="margin: 12px 0 6px;">Verify Your Email</h2>
+        <p class="muted" style="margin-bottom: 16px;">
+          Verification email has been sent to your email address.
+        </p>
+
+        <div class="verification-badge-box">
+          <div class="verification-mail-icon">✉️</div>
+          <div>
+            <span class="verification-label">VERIFICATION SENT TO:</span>
+            <div id="verify-user-email" class="verification-email-text">user@example.com</div>
+          </div>
+        </div>
+
+        <p style="font-size: 13px; line-height: 1.6; color: var(--paper); margin: 18px 0 20px;">
+          Please check your inbox and click the verification link to activate your Winter Arc account.<br>
+          <span style="font-size: 11px; color: var(--muted);">(If you don't see it within a minute, check your Spam or Junk folder.)</span>
+        </p>
+
+        <div id="verify-feedback" class="recovery-box" hidden></div>
+
+        <div class="verification-actions" style="margin-top: 20px;">
+          <button type="button" class="button button-primary" id="btn-check-verified" style="width: 100%; margin-bottom: 10px;">
+            ✓ I've Verified My Email
+          </button>
+          
+          <button type="button" class="button button-secondary" id="btn-resend-verification" style="width: 100%; margin-bottom: 16px;">
+            🔄 Resend Verification Email
+          </button>
+        </div>
+
+        <div class="auth-links" style="justify-content: center; margin-top: 10px;">
+          <button type="button" class="text-button" id="btn-back-to-login">
+            ← Back to Login
+          </button>
+        </div>
+      </section>
 
       <!-- Educational Showcase: The 5 Non-Negotiable Pillars -->
       <section class="auth-content-showcase" style="grid-column: 1 / -1; margin-top: 40px;">
@@ -595,7 +635,7 @@
   <div id="web-toast-container" class="web-toast-container" aria-live="polite"></div>
 
   <script src="site.js"></script>
-  <script type="module" src="app.js?v=20261003-1"></script>
+  <script type="module" src="app.js?v=20261003-2"></script>
 </body>
 
 </html>
