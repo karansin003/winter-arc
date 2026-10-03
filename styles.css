@@ -198,7 +198,12 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 .sign-out-button { color: var(--paper); }
 .small-button { padding: 7px 11px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; transition: all .15s ease; }
 .small-button:hover { border-color: var(--lime); color: var(--paper); }
-.small-button.danger:hover { border-color: var(--orange); color: var(--orange); }
+.small-button.danger { border-color: rgba(255, 107, 74, 0.4); color: var(--orange); }
+.small-button.danger:hover { background: rgba(255, 107, 74, 0.15); border-color: var(--orange); color: #fff; }
+.small-button.warning { border-color: rgba(255, 185, 36, 0.4); color: #fbbf24; }
+.small-button.warning:hover { background: rgba(255, 185, 36, 0.15); border-color: #fbbf24; color: #fff; }
+.small-button.success { border-color: rgba(213, 255, 84, 0.4); color: var(--lime); }
+.small-button.success:hover { background: rgba(213, 255, 84, 0.15); border-color: var(--lime); color: #fff; }
 
 /* Hero & Countdown */
 .hero { display: grid; grid-template-columns: 1fr .85fr; align-items: end; gap: 24px; padding: 28px 0 24px; }
@@ -703,6 +708,38 @@ input:focus, textarea:focus, select:focus { border-color: var(--lime); }
 .recovery-error strong,
 .error-glow {
   color: var(--orange);
+}
+.recovery-warning {
+  background: rgba(255, 185, 36, 0.1);
+  border: 1px solid rgba(255, 185, 36, 0.4);
+  color: #fef3c7;
+}
+.recovery-warning strong,
+.warning-glow {
+  color: #fbbf24;
+}
+.auth-alert-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: var(--paper);
+  font: 500 11px var(--mono);
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.auth-alert-btn:hover:not(:disabled) {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
+}
+.auth-alert-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }

@@ -1,9 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
+  applyActionCode,
   browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  sendEmailVerification,
   sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
@@ -14,6 +16,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
@@ -695,6 +698,24 @@ function startUserData(currentUser) {
     snapshot => {
       if (snapshot.exists()) {
         userProfile = snapshot.data();
+        if (userProfile.isSuspended === true || userProfile.status === "suspended") {
+          handleSignOut();
+          showAuthAlert(
+            "warning",
+            "Account Suspended",
+            "Your account has been suspended by the administrator. Tracker access has been revoked."
+          );
+          return;
+        }
+        if (userProfile.isDeleted === true || userProfile.status === "deleted") {
+          handleSignOut();
+          showAuthAlert(
+            "error",
+            "Account Deleted",
+            "Your account has been permanently removed by the administrator."
+          );
+          return;
+        }
         try {
           localStorage.setItem(profileCacheKey, JSON.stringify(userProfile));
         } catch {}
@@ -773,13 +794,160 @@ function friendlyAuthError(error) {
   const messages = {
     "auth/email-already-in-use": "An account already exists for this email. Sign in instead.",
     "auth/invalid-credential": "Email or password is incorrect.",
+    "auth/wrong-password": "Email or password is incorrect.",
+    "auth/user-not-found": "No warrior account found with this email. Please create an account.",
+    "auth/user-disabled": "This account has been disabled. Please contact support.",
     "auth/weak-password": "Use a stronger password with at least 6 characters.",
     "auth/invalid-email": "Please enter a valid email address.",
     "auth/too-many-requests": "Too many attempts. Try again in a little while.",
     "auth/network-request-failed": "Network error. Check your internet connection."
   };
-  return messages[error.code] || error.message;
+  return messages[error?.code] || error?.message || "An authentication error occurred.";
 }
+
+let resendInterval = null;
+
+function showAuthAlert(type, title, messageHtml, options = {}) {
+  const alertBox = document.querySelector("#auth-alert-box");
+  if (!alertBox) return;
+
+  if (resendInterval) {
+    clearInterval(resendInterval);
+    resendInterval = null;
+  }
+
+  alertBox.hidden = false;
+  alertBox.className = `recovery-box recovery-${type}`;
+
+  const iconSvg =
+    type === "success"
+      ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="success-glow"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+      : type === "warning"
+      ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="warning-glow"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
+      : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="error-glow"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+  let actionHtml = "";
+  if (options.allowResend && options.email) {
+    actionHtml = `
+      <div>
+        <button type="button" class="auth-alert-btn" id="resend-verification-btn">
+          Resend Verification Email
+        </button>
+      </div>
+    `;
+  }
+
+  alertBox.innerHTML = `
+    <div class="recovery-icon">${iconSvg}</div>
+    <div class="recovery-body">
+      <strong>${title}</strong>
+      <div>${messageHtml}</div>
+      ${actionHtml}
+    </div>
+  `;
+
+  if (options.allowResend && options.email) {
+    const resendBtn = alertBox.querySelector("#resend-verification-btn");
+    if (resendBtn) {
+      if (options.cooldown) {
+        startResendCooldown(resendBtn, options.cooldown);
+      }
+      resendBtn.addEventListener("click", () => {
+        handleResendVerification(options.email, options.password, resendBtn);
+      });
+    }
+  }
+}
+
+function hideAuthAlert() {
+  const alertBox = document.querySelector("#auth-alert-box");
+  if (alertBox) alertBox.hidden = true;
+  if (resendInterval) {
+    clearInterval(resendInterval);
+    resendInterval = null;
+  }
+}
+
+function startResendCooldown(button, seconds) {
+  let remaining = seconds;
+  button.disabled = true;
+  const originalText = "Resend Verification Email";
+  button.textContent = `Resend in ${remaining}s`;
+
+  if (resendInterval) clearInterval(resendInterval);
+  resendInterval = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearInterval(resendInterval);
+      resendInterval = null;
+      button.disabled = false;
+      button.textContent = originalText;
+    } else {
+      button.textContent = `Resend in ${remaining}s`;
+    }
+  }, 1000);
+}
+
+async function handleResendVerification(email, cachedPassword, buttonEl) {
+  if (!email) {
+    showAuthAlert("error", "Email Required", "Please enter your email in the field above.");
+    return;
+  }
+
+  let pwd = cachedPassword || (authForm.password?.value || "").trim();
+  if (!pwd) {
+    showAuthAlert(
+      "warning",
+      "Password Required to Resend",
+      `Please enter your password in the Password field above, then click <strong>Resend Verification Email</strong>.`,
+      { allowResend: true, email: email, password: "" }
+    );
+    if (authForm.password) authForm.password.focus();
+    return;
+  }
+
+  if (buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.textContent = "Sending...";
+  }
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pwd);
+    if (cred.user.emailVerified) {
+      await signOut(auth);
+      showAuthAlert(
+        "success",
+        "Already Verified!",
+        "Your email is already verified. You can now log in to your tracker."
+      );
+      return;
+    }
+
+    try {
+      await sendEmailVerification(cred.user, {
+        url: window.location.origin + "/?verified=true",
+        handleCodeInApp: false
+      });
+    } catch {
+      await sendEmailVerification(cred.user);
+    }
+    await signOut(auth);
+
+    showAuthAlert(
+      "success",
+      "Verification Email Sent! ✉️",
+      `A new verification link was sent to <strong>${escapeHtml(email)}</strong>.<br>Please check your inbox (and Spam folder) to verify.`,
+      { allowResend: true, email: email, password: pwd, cooldown: 45 }
+    );
+  } catch (err) {
+    showAuthAlert("error", "Could Not Resend Link", friendlyAuthError(err), {
+      allowResend: true,
+      email: email,
+      password: pwd
+    });
+  }
+}
+
 
 async function handleProfileSave(formData) {
   const name = String(formData.get("name") || "").trim();
@@ -1071,6 +1239,9 @@ function startNotifications(currentUser) {
 
 async function updateDirectoryUser(currentUser) {
   if (!currentUser) return;
+  if (userProfile?.isSuspended === true || userProfile?.status === "suspended" || userProfile?.isDeleted) {
+    return;
+  }
   try {
     let streakCount = 0;
     let completedDays = 0;
@@ -1135,6 +1306,7 @@ async function handleSignOut() {
     if (appView) appView.hidden = true;
     if (authView) authView.hidden = false;
     authMode = "signin";
+    hideAuthAlert();
     updateAuthMode();
     if (auth) await signOut(auth);
     showMessage("Signed out successfully.");
@@ -1159,6 +1331,7 @@ authForm.addEventListener("submit", async event => {
   const wakeUpTime = document.querySelector("#signup-wake")?.value || "05:00 AM";
   const dailyTarget = (document.querySelector("#signup-focus")?.value || "").trim();
   const mantra = (document.querySelector("#signup-mantra")?.value || "").trim();
+  const submitBtn = document.querySelector("#auth-submit");
 
   if (!email) {
     authMessage.textContent = "Please enter your email.";
@@ -1169,7 +1342,14 @@ authForm.addEventListener("submit", async event => {
     return;
   }
 
-  authMessage.textContent = "Working...";
+  authMessage.textContent = "";
+  hideAuthAlert();
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `${authMode === "create" ? "Creating Account..." : "Signing in..."} <span aria-hidden="true">⏳</span>`;
+  }
+
   try {
     try {
       await setPersistence(auth, browserLocalPersistence);
@@ -1178,14 +1358,6 @@ authForm.addEventListener("submit", async event => {
     if (authMode === "create") {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: displayName || "Ghost Warrior" });
-
-      localStorage.setItem(SESSION_FLAG, credential.user.uid);
-      localStorage.removeItem("winter_arc_explicit_signout");
-      document.documentElement.classList.add("has-active-session");
-      document.body.classList.add("user-authenticated");
-      if (globalSiteHeader) globalSiteHeader.hidden = true;
-      if (authView) authView.hidden = true;
-      if (appView) appView.hidden = false;
 
       const newProfile = {
         displayName: displayName || "Ghost Warrior",
@@ -1204,11 +1376,117 @@ authForm.addEventListener("submit", async event => {
       } catch (err) {
         console.warn("Could not save initial profile doc:", err);
       }
-      userProfile = newProfile;
-      user = credential.user;
-      startUserData(user);
+
+      // Send Firebase Email Verification link
+      try {
+        await sendEmailVerification(credential.user, {
+          url: window.location.origin + "/?verified=true",
+          handleCodeInApp: false
+        });
+      } catch (actionErr) {
+        try {
+          await sendEmailVerification(credential.user);
+        } catch (verifyErr) {
+          console.warn("sendEmailVerification fallback failed:", verifyErr);
+        }
+      }
+
+      // Unverified user MUST NOT enter the app. Sign out immediately.
+      await signOut(auth);
+      localStorage.removeItem(SESSION_FLAG);
+      localStorage.setItem("winter_arc_explicit_signout", "true");
+      document.documentElement.classList.remove("has-active-session");
+      document.body.classList.remove("user-authenticated");
+
+      // Switch to signin view with email prefilled
+      authMode = "signin";
+      updateAuthMode();
+      if (authForm.email) authForm.email.value = email;
+      if (authForm.password) authForm.password.value = "";
+
+      showAuthAlert(
+        "success",
+        "Verification Email Sent! ✉️",
+        `We've sent an activation link to <strong>${escapeHtml(email)}</strong>.<br>` +
+        `Please check your inbox (and Spam folder) and click the link to verify your account before logging in.`,
+        {
+          allowResend: true,
+          email: email,
+          password: password,
+          cooldown: 45
+        }
+      );
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
+
+      // Check if user's email is verified
+      if (!credential.user.emailVerified) {
+        await signOut(auth);
+        localStorage.removeItem(SESSION_FLAG);
+        localStorage.setItem("winter_arc_explicit_signout", "true");
+        document.documentElement.classList.remove("has-active-session");
+        document.body.classList.remove("user-authenticated");
+        if (globalSiteHeader) globalSiteHeader.hidden = false;
+        if (authView) authView.hidden = false;
+        if (appView) appView.hidden = true;
+
+        showAuthAlert(
+          "warning",
+          "Email Not Verified",
+          `Your account for <strong>${escapeHtml(email)}</strong> is not verified yet.<br>Please open your verification email and click the link before logging in.`,
+          {
+            allowResend: true,
+            email: email,
+            password: password
+          }
+        );
+        return;
+      }
+
+      // Check database status (Suspended or Deleted)
+      try {
+        const dirSnap = await getDoc(doc(db, "directory_users", credential.user.uid));
+        if (dirSnap.exists()) {
+          const dirData = dirSnap.data();
+          if (dirData.isSuspended === true || dirData.status === "suspended") {
+            await signOut(auth);
+            localStorage.removeItem(SESSION_FLAG);
+            localStorage.setItem("winter_arc_explicit_signout", "true");
+            document.documentElement.classList.remove("has-active-session");
+            document.body.classList.remove("user-authenticated");
+            if (globalSiteHeader) globalSiteHeader.hidden = false;
+            if (authView) authView.hidden = false;
+            if (appView) appView.hidden = true;
+
+            showAuthAlert(
+              "warning",
+              "Account Suspended",
+              "Your account has been suspended by the administrator. Access to the Winter Arc tracker has been revoked."
+            );
+            return;
+          }
+          if (dirData.isDeleted === true || dirData.status === "deleted") {
+            await signOut(auth);
+            localStorage.removeItem(SESSION_FLAG);
+            localStorage.setItem("winter_arc_explicit_signout", "true");
+            document.documentElement.classList.remove("has-active-session");
+            document.body.classList.remove("user-authenticated");
+            if (globalSiteHeader) globalSiteHeader.hidden = false;
+            if (authView) authView.hidden = false;
+            if (appView) appView.hidden = true;
+
+            showAuthAlert(
+              "error",
+              "Account Not Found",
+              "Your account has been deleted by the administrator. Please register a new account to join."
+            );
+            return;
+          }
+        }
+      } catch (errDir) {
+        console.warn("Could not check account directory status:", errDir);
+      }
+
       localStorage.setItem(SESSION_FLAG, credential.user.uid);
       localStorage.removeItem("winter_arc_explicit_signout");
       document.documentElement.classList.add("has-active-session");
@@ -1218,15 +1496,21 @@ authForm.addEventListener("submit", async event => {
       if (appView) appView.hidden = false;
       user = credential.user;
       startUserData(user);
+      authForm.reset();
     }
-    authForm.reset();
   } catch (error) {
     authMessage.textContent = friendlyAuthError(error);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `${authMode === "create" ? "Start Winter Arc" : "Login"} <span aria-hidden="true">↗</span>`;
+    }
   }
 });
 
 document.querySelector("#auth-switch").addEventListener("click", () => {
   authMode = authMode === "signin" ? "create" : "signin";
+  hideAuthAlert();
   updateAuthMode();
 });
 
@@ -1415,7 +1699,60 @@ if (!firebaseReady()) {
     setupNote.textContent = "Your browser may not keep you signed in. Check its privacy or storage settings.";
   }
 
+  // Handle email verification action links or redirects
+  const urlParams = new URLSearchParams(window.location.search);
+  const isVerifiedRedirect = urlParams.get("verified") === "true";
+  const actionMode = urlParams.get("mode");
+  const actionCode = urlParams.get("oobCode");
+
+  if (isVerifiedRedirect) {
+    showAuthAlert(
+      "success",
+      "Email Verified Successfully! 🎉",
+      "Your email has been verified. You can now log in to access your Winter Arc tracker."
+    );
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (actionMode === "verifyEmail" && actionCode) {
+    applyActionCode(auth, actionCode)
+      .then(() => {
+        showAuthAlert(
+          "success",
+          "Email Verified Successfully! 🎉",
+          "Your email address is now verified. You can log in below to enter Ghost Mode."
+        );
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })
+      .catch(() => {
+        showAuthAlert(
+          "error",
+          "Verification Link Invalid or Expired",
+          "This verification link is invalid or has already expired. If you haven't verified yet, please log in or click Resend Verification."
+        );
+      });
+  }
+
   onAuthStateChanged(auth, currentUser => {
+    if (currentUser && !currentUser.emailVerified) {
+      signOut(auth).catch(() => {});
+      localStorage.removeItem(SESSION_FLAG);
+      localStorage.setItem("winter_arc_explicit_signout", "true");
+      document.documentElement.classList.remove("has-active-session");
+      document.body.classList.remove("user-authenticated");
+      if (globalSiteHeader) globalSiteHeader.hidden = false;
+      if (appView) appView.hidden = true;
+      if (authView) authView.hidden = false;
+      showAuthAlert(
+        "warning",
+        "Email Verification Required",
+        `Please verify your email (<strong>${escapeHtml(currentUser.email || "your email")}</strong>) before logging into your Winter Arc tracker.`,
+        {
+          allowResend: true,
+          email: currentUser.email || ""
+        }
+      );
+      return;
+    }
+
     user = currentUser;
     if (!user) {
       const explicitSignout = localStorage.getItem("winter_arc_explicit_signout") === "true";

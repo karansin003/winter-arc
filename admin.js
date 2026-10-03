@@ -10,6 +10,7 @@ import {
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   getFirestore,
@@ -686,6 +687,7 @@ function renderUsers() {
     const days = Number(u.completedDays) || 0;
     const isAdminUser = (u.email && u.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) || u.role === "admin";
     const userUid = u.uid || u.id || "";
+    const isSuspended = u.isSuspended === true || u.status === "suspended";
 
     return `
       <tr>
@@ -701,6 +703,12 @@ function renderUsers() {
         </td>
         <td style="font-family: var(--mono); font-size: 12px; color: var(--lime);">${escapeHtml(u.email || "No email")}</td>
         <td>
+          ${isSuspended ?
+            '<span class="admin-status-badge" style="background: rgba(255,107,74,0.18); color: var(--orange); border: 1px solid rgba(255,107,74,0.35); padding: 3px 8px; border-radius: 4px; font: 700 10px var(--mono);">🔴 SUSPENDED</span>' :
+            '<span class="admin-status-badge" style="background: rgba(213,255,84,0.15); color: var(--lime); border: 1px solid rgba(213,255,84,0.3); padding: 3px 8px; border-radius: 4px; font: 700 10px var(--mono);">🟢 ACTIVE</span>'
+          }
+        </td>
+        <td>
           <span style="font-weight: 700; color: ${streak > 0 ? 'var(--lime)' : 'var(--muted)'};">
             ${streak > 0 ? '🔥 ' + streak + ' days' : '0 days'}
           </span>
@@ -708,9 +716,19 @@ function renderUsers() {
         <td>${days} / 92</td>
         <td style="font: 11px var(--mono); color: var(--muted);">${escapeHtml(lastActiveStr)}</td>
         <td>
-          <button type="button" class="small-button" data-action="notify-user" data-uid="${escapeHtml(userUid)}" data-name="${escapeHtml(u.displayName || u.email || 'User')}">
-            ✉️ Notify
-          </button>
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="small-button" data-action="notify-user" data-uid="${escapeHtml(userUid)}" data-name="${escapeHtml(u.displayName || u.email || 'User')}">
+              ✉️ Notify
+            </button>
+            ${!isAdminUser ? `
+              <button type="button" class="small-button ${isSuspended ? 'success' : 'warning'}" data-action="toggle-suspend" data-uid="${escapeHtml(userUid)}" data-name="${escapeHtml(u.displayName || u.email || 'User')}" data-suspended="${isSuspended ? 'true' : 'false'}">
+                ${isSuspended ? '▶️ Unsuspend' : '⏸️ Suspend'}
+              </button>
+              <button type="button" class="small-button danger" data-action="delete-user" data-uid="${escapeHtml(userUid)}" data-name="${escapeHtml(u.displayName || u.email || 'User')}">
+                🗑️ Delete
+              </button>
+            ` : '<span style="font: 10px var(--mono); color: var(--muted); padding: 4px 6px;">(Admin Account)</span>'}
+          </div>
         </td>
       </tr>
     `;
@@ -736,7 +754,157 @@ function renderUsers() {
       }
     });
   });
+
+  // Toggle Suspend / Unsuspend action
+  usersTableBody.querySelectorAll("[data-action='toggle-suspend']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const uid = btn.getAttribute("data-uid");
+      const name = btn.getAttribute("data-name");
+      const isSuspended = btn.getAttribute("data-suspended") === "true";
+      handleToggleSuspendUser(uid, isSuspended, name, btn);
+    });
+  });
+
+  // Delete User action
+  usersTableBody.querySelectorAll("[data-action='delete-user']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const uid = btn.getAttribute("data-uid");
+      const name = btn.getAttribute("data-name");
+      handleDeleteUser(uid, name, btn);
+    });
+  });
 }
+
+// Suspend / Unsuspend User in Database
+async function handleToggleSuspendUser(uid, currentSuspended, userName, btnElement) {
+  const willSuspend = !currentSuspended;
+  const actionWord = willSuspend ? "SUSPEND" : "UNSUSPEND (REACTIVATE)";
+
+  const confirmed = confirm(
+    `Are you sure you want to ${actionWord} the account for "${userName}"?\n\n` +
+    (willSuspend
+      ? "• The user will be immediately logged out of their tracker.\n• Future sign-ins will be blocked."
+      : "• The user's account will be reactivated and they can log in normally.")
+  );
+  if (!confirmed) return;
+
+  btnElement.disabled = true;
+  const originalText = btnElement.innerHTML;
+  btnElement.innerHTML = `<span class="spin">⏳</span> Processing...`;
+
+  try {
+    const newStatus = willSuspend ? "suspended" : "active";
+
+    // 1. Update directory_users doc in Firestore
+    const dirRef = doc(db, "directory_users", uid);
+    await updateDoc(dirRef, {
+      status: newStatus,
+      isSuspended: willSuspend,
+      statusUpdatedAt: serverTimestamp()
+    });
+
+    // 2. Update user's profile doc in Firestore (triggers real-time kickout for active session)
+    try {
+      const profileRef = doc(db, "users", uid, "winterArc", "profile");
+      await setDoc(profileRef, {
+        status: newStatus,
+        isSuspended: willSuspend,
+        statusUpdatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (profileErr) {
+      console.warn("Could not update user profile doc:", profileErr);
+    }
+
+    // 3. Dispatch an official notification to user subcollection
+    try {
+      await addDoc(collection(db, "users", uid, "notifications"), {
+        title: willSuspend ? "Account Suspended" : "Account Reactivated",
+        message: willSuspend
+          ? "Your account has been suspended by the administrator. Access to the tracker has been restricted."
+          : "Your account has been reactivated. You can now access your daily tracker.",
+        read: false,
+        type: willSuspend ? "account_suspended" : "account_reactivated",
+        createdAt: serverTimestamp()
+      });
+    } catch {}
+
+    // Update local state and re-render
+    const targetUser = allUsers.find(u => (u.uid || u.id) === uid);
+    if (targetUser) {
+      targetUser.status = newStatus;
+      targetUser.isSuspended = willSuspend;
+    }
+
+    showToast(
+      willSuspend ? "User Suspended" : "User Reactivated",
+      `"${userName}" has been ${willSuspend ? "suspended" : "reactivated"} successfully.`
+    );
+    renderUsers();
+  } catch (err) {
+    console.error("Failed to toggle user suspension:", err);
+    alert("Error updating user status: " + err.message);
+  } finally {
+    btnElement.disabled = false;
+    btnElement.innerHTML = originalText;
+  }
+}
+
+// Delete User from Database
+async function handleDeleteUser(uid, userName, btnElement) {
+  const confirmed = confirm(
+    `⚠️ PERMANENT DELETE WARNING ⚠️\n\n` +
+    `Are you sure you want to permanently delete the account for "${userName}"?\n\n` +
+    `• Their tracker logs and streak data will be permanently wiped from the database.\n` +
+    `• Their directory profile will be deleted.\n\n` +
+    `This action CANNOT be undone.`
+  );
+  if (!confirmed) return;
+
+  const safetyCheck = prompt(`Type DELETE in all capital letters to confirm permanent deletion of "${userName}":`);
+  if (safetyCheck !== "DELETE") {
+    alert("Deletion cancelled. Confirmation text did not match.");
+    return;
+  }
+
+  btnElement.disabled = true;
+  btnElement.innerHTML = `<span class="spin">⏳</span> Deleting...`;
+
+  try {
+    // 1. Mark profile as deleted (triggers immediate kickout if user has active session)
+    try {
+      const profileRef = doc(db, "users", uid, "winterArc", "profile");
+      await setDoc(profileRef, {
+        isDeleted: true,
+        status: "deleted",
+        deletedAt: serverTimestamp(),
+        displayName: "[Deleted User]"
+      }, { merge: true });
+    } catch {}
+
+    // 2. Delete state document
+    try {
+      await deleteDoc(doc(db, "users", uid, "winterArc", "state"));
+    } catch {}
+
+    // 3. Delete directory_users document from Firestore
+    await deleteDoc(doc(db, "directory_users", uid));
+
+    // 4. Remove from local allUsers list and update metrics
+    allUsers = allUsers.filter(u => (u.uid || u.id) !== uid);
+    totalStreaks = allUsers.reduce((sum, u) => sum + (Number(u.currentStreak) || 0), 0);
+    if (metricUsersCount) metricUsersCount.textContent = allUsers.length;
+    if (metricStreaksCount) metricStreaksCount.textContent = totalStreaks;
+    if (tabUsersBadge) tabUsersBadge.textContent = allUsers.length;
+    updateBroadcastRecipients();
+    renderUsers();
+
+    showToast("User Deleted", `User "${userName}" has been permanently deleted from the database.`);
+  } catch (err) {
+    console.error("Failed to delete user:", err);
+    alert("Error deleting user from database: " + err.message);
+  }
+}
+
 
 // Update Broadcast Dropdown Options
 function updateBroadcastRecipients() {
