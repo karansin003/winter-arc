@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#171a16">
-  <title>Contact Us · Winter Arc (Ghost Mode Support)</title>
-  <meta name="description" content="Get in touch with the Winter Arc team for technical support, account assistance, feedback, or inquiries. Fast, friendly response.">
+  <title>Contact Us · Winter Arc Support &amp; Direct Communication (2026)</title>
+  <meta name="description" content="Get in touch with the Winter Arc developer and support desk for account assistance, technical bug reports, feedback, or general questions. Fast, genuine response.">
   <link rel="canonical" href="https://arc-challenge.web.app/contact">
 
   <!-- Favicon & Touch Icons -->
@@ -37,9 +37,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261001-9">
+  <link rel="stylesheet" href="styles.css?v=20261010-1">
 
-  <!-- ContactPage & BreadcrumbList Structured Data (schema.org) -->
+  <!-- ContactPage & BreadcrumbList Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -65,12 +65,12 @@
       {
         "@type": "ContactPage",
         "@id": "https://arc-challenge.web.app/contact#contactpage",
-        "name": "Winter Arc Support",
+        "name": "Winter Arc Support Desk",
         "url": "https://arc-challenge.web.app/contact",
-        "description": "Customer support and developer contact for Winter Arc Ghost Mode.",
+        "description": "Direct communication desk and user support for the Winter Arc 2026 platform.",
         "mainEntity": {
           "@type": "Organization",
-          "name": "Winter Arc",
+          "name": "Winter Arc Project",
           "url": "https://arc-challenge.web.app/",
           "email": "karansin8672@gmail.com",
           "logo": {
@@ -88,7 +88,7 @@
 
   <main class="frame">
     <!-- Universal Site Header -->
-    <header class="site-header">
+    <header class="site-header" id="global-site-header">
       <a class="site-brand" href="/" aria-label="Winter Arc Home">
         <span class="brand-gem">W</span>
         <div class="brand-text">
@@ -101,12 +101,13 @@
 
       <ul class="site-nav-list" role="navigation" aria-label="Main Navigation">
         <li><a class="nav-link" href="/">Tracker</a></li>
-        <li><a class="nav-link" href="/winter-arc-tracker">Arc Tracker</a></li>
         <li><a class="nav-link" href="/guide">Blueprint Guide</a></li>
+        <li><a class="nav-link" href="/winter-arc-plan">Execution Plan</a></li>
+        <li><a class="nav-link" href="/habit-tracking-guide">Habit Guide</a></li>
         <li><a class="nav-link" href="/about">About</a></li>
         <li><a class="nav-link" href="/faq">FAQ</a></li>
         <li><a class="nav-link active" href="/contact">Contact</a></li>
-        <li><a class="nav-cta-btn" href="/">Open App →</a></li>
+        <li><a class="nav-cta-btn" href="/">Open Tracker →</a></li>
       </ul>
     </header>
 
@@ -119,9 +120,9 @@
 
     <!-- Header -->
     <header class="article-hero">
-      <p class="eyebrow" style="color: var(--lime);">COMMUNICATION & INQUIRIES</p>
-      <h1 class="article-title">Get in Touch with the Winter Arc Team</h1>
-      <p class="article-subtitle">Have technical feedback, found a bug in the 92-day grid, or need assistance recovering your account? We are here to help you stay focused on your arc.</p>
+      <p class="eyebrow" style="color: var(--lime);">COMMUNICATION &amp; SUPPORT</p>
+      <h1 class="article-title">Contact the Winter Arc Team</h1>
+      <p class="article-subtitle">Have technical questions, found a bug in the 92-day grid, or need assistance recovering your account? Send a message below or email us directly.</p>
     </header>
 
     <!-- Contact Grid: Form + Info Sidebar -->
@@ -129,14 +130,14 @@
       <!-- Contact Form Panel -->
       <section class="contact-panel">
         <h2 style="color: var(--paper); font-size: 22px; margin: 0 0 8px;">Send a Direct Message</h2>
-        <p class="muted" style="margin-bottom: 22px;">Fill out the form below. We typically respond within 24 to 48 business hours.</p>
+        <p class="muted" style="margin-bottom: 22px;">Fill out the form below. We typically review and respond to inquiries within 24–48 business hours.</p>
 
         <form id="contact-form" class="auth-panel" style="padding: 0; background: transparent; border: none;">
           <!-- Honeypot anti-spam protection -->
-          <input type="text" name="website_trap_field" class="honeypot-field" tabindex="-1" autocomplete="off">
+          <input type="text" id="website_trap_field" name="website_trap_field" class="honeypot-field" tabindex="-1" autocomplete="off" style="display:none;" aria-hidden="true">
 
           <label for="contact-name">Your Full Name / Alias *</label>
-          <input id="contact-name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Marcus Vance" required>
+          <input id="contact-name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Alex Vance" required>
 
           <label for="contact-email">Email Address *</label>
           <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="you@domain.com" required>
@@ -145,17 +146,16 @@
           <select id="contact-subject" name="subject" class="custom-select" required>
             <option value="Technical Support">Technical Support / Bug Report</option>
             <option value="Account Assistance">Account / Authentication Assistance</option>
-            <option value="Feature Request">Feature Request / Suggestion</option>
-            <option value="Partnership & Press">Partnership, Sponsorship & Press</option>
-            <option value="General Question">General Question</option>
+            <option value="Feature Suggestion">Feature Request / Suggestion</option>
+            <option value="Partnership & Inquiries">General Question or Inquiries</option>
           </select>
 
           <label for="contact-message">Message Details *</label>
           <textarea id="contact-message" name="message" class="journal-input" maxlength="2000" placeholder="Please provide specific details so we can best assist you..." required style="min-height: 140px;"></textarea>
 
-          <button class="button button-primary" type="submit" id="contact-submit" style="margin-top: 14px;">Send Message →</button>
+          <button class="button button-primary" type="submit" id="contact-submit-btn" style="margin-top: 14px;">Send Message →</button>
 
-          <div id="contact-status" style="margin-top: 16px;" role="alert" aria-live="polite"></div>
+          <div id="contact-status" style="margin-top: 16px;" role="status" aria-live="polite"></div>
         </form>
       </section>
 
@@ -164,23 +164,24 @@
         <div class="info-card">
           <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">DIRECT EMAIL</p>
           <h3>Official Support Inbox</h3>
-          <p>You can also reach our engineering and community desks directly via email:</p>
+          <p>You can also reach the developer directly via email:</p>
           <p style="margin-top: 8px;">
             <a href="mailto:karansin8672@gmail.com" style="font-weight: 700; font-family: var(--mono); color: var(--lime);">karansin8672@gmail.com</a>
           </p>
+          <small style="color: var(--muted); display: block; margin-top: 6px;">Creator: Karan Kumar · Winter Arc Project</small>
         </div>
 
         <div class="info-card">
           <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">FAST ANSWERS</p>
           <h3>Check the Knowledge Base</h3>
-          <p>Most common questions regarding habit logging, streak flame mechanics, and password resets are already documented in our FAQ.</p>
+          <p>Most common questions regarding habit logging, streak flame mechanics, and daily tracking are answered in our FAQ.</p>
           <p style="margin-top: 8px;">
             <a href="/faq">Browse Frequently Asked Questions →</a>
           </p>
         </div>
 
         <div class="info-card">
-          <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">SECURITY & RECOVERY</p>
+          <p class="eyebrow" style="color: var(--lime); margin-bottom: 4px;">SECURITY &amp; RECOVERY</p>
           <h3>Lost Password?</h3>
           <p>If you cannot log into your account, you can initiate a self-service reset link immediately without waiting for support.</p>
           <p style="margin-top: 8px;">
@@ -189,22 +190,6 @@
         </div>
       </aside>
     </div>
-
-    <!-- Natural Editorial Ad Placement Placeholder -->
-    <aside class="ad-editorial-break" aria-label="Advertisement">
-      <div class="adsense-header-bar">
-        <div class="adsense-label">
-          <span class="adsense-indicator"></span>
-          Advertisement
-        </div>
-      </div>
-      <div class="adsense-slot" style="min-height: 90px;">
-        <div class="adsense-placeholder">
-          <p>Responsive Display Advertisement Slot</p>
-          <small>Compliant non-intrusive placement matching Google Publisher Guidelines.</small>
-        </div>
-      </div>
-    </aside>
 
     <!-- Professional Multi-Column Footer -->
     <footer class="site-footer">
@@ -220,19 +205,17 @@
           <p>92 days of uninterrupted discipline, private daily tracking, and relentless self-mastery from October 1 to December 31.</p>
           <div class="footer-badges">
             <span class="badge-sub">Private by Design</span>
-            <span class="badge-sub">Cloud Encrypted</span>
-            <span class="badge-sub">AdSense Compliant</span>
+            <span class="badge-sub">Zero Paywalls</span>
+            <span class="badge-sub">Free 92-Day Tracker</span>
           </div>
         </div>
 
         <div>
           <h4 class="footer-heading">Platform</h4>
           <ul class="footer-links-list">
-            <li><a href="/winter-arc-tracker">Winter Arc Tracker 2026</a></li>
             <li><a href="/">Interactive Tracker</a></li>
-            <li><a href="/">92-Day Grid</a></li>
-            <li><a href="/">Habit Builder</a></li>
-            <li><a href="/">Daily Journal</a></li>
+            <li><a href="/winter-arc-plan">92-Day Execution Plan</a></li>
+            <li><a href="/habit-tracking-guide">Habit Tracking Guide</a></li>
             <li><a href="/forgot">Account Recovery</a></li>
           </ul>
         </div>
@@ -240,19 +223,19 @@
         <div>
           <h4 class="footer-heading">Resources</h4>
           <ul class="footer-links-list">
-            <li><a href="/guide">The 92-Day Blueprint</a></li>
-            <li><a href="/about">About Ghost Mode</a></li>
+            <li><a href="/guide">Blueprint Guide</a></li>
+            <li><a href="/about">About Winter Arc</a></li>
             <li><a href="/faq">Frequently Asked Questions</a></li>
-            <li><a href="/contact">Contact & Support</a></li>
+            <li><a href="/contact">Contact &amp; Support</a></li>
           </ul>
         </div>
 
         <div>
-          <h4 class="footer-heading">Legal & Compliance</h4>
+          <h4 class="footer-heading">Legal &amp; Compliance</h4>
           <ul class="footer-links-list">
             <li><a href="/privacy">Privacy Policy</a></li>
             <li><a href="/terms">Terms of Service</a></li>
-            <li><a href="/disclaimer">Health & Fitness Disclaimer</a></li>
+            <li><a href="/disclaimer">Health &amp; Fitness Disclaimer</a></li>
             <li><a href="/ads.txt">ads.txt Verification</a></li>
           </ul>
         </div>
@@ -266,5 +249,66 @@
   </main>
 
   <script src="site.js"></script>
+  <!-- Functional Contact Form Submission via Firebase Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const contactForm = document.getElementById("contact-form");
+    const statusBox = document.getElementById("contact-status");
+    const submitBtn = document.getElementById("contact-submit-btn");
+
+    if (contactForm) {
+      contactForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Honeypot check for bots
+        const trap = document.getElementById("website_trap_field");
+        if (trap && trap.value) {
+          return;
+        }
+
+        const name = document.getElementById("contact-name").value.trim();
+        const email = document.getElementById("contact-email").value.trim();
+        const subject = document.getElementById("contact-subject").value;
+        const message = document.getElementById("contact-message").value.trim();
+
+        if (!name || !email || !message) {
+          statusBox.innerHTML = '<div style="color: #ef4444; font-size: 13px; padding: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 4px;">Please fill out all required fields.</div>';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending Message...";
+        statusBox.innerHTML = '<div style="color: var(--muted); font-size: 13px;">Transmitting message...</div>';
+
+        try {
+          await addDoc(collection(db, "support_requests"), {
+            name,
+            email,
+            subject,
+            message,
+            createdAt: serverTimestamp(),
+            status: "unread",
+            clientTimestamp: new Date().toISOString()
+          });
+
+          statusBox.innerHTML = '<div style="color: var(--lime); font-size: 13px; padding: 12px; background: rgba(213, 255, 84, 0.1); border: 1px solid var(--lime); border-radius: 4px; line-height: 1.5;">✓ Thank you, ' + name + '! Your message has been received. We will respond to ' + email + ' shortly.</div>';
+          contactForm.reset();
+        } catch (err) {
+          console.error("Contact submission error:", err);
+          // Fallback to mailto link
+          statusBox.innerHTML = '<div style="color: var(--paper); font-size: 13px; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); border-radius: 4px; line-height: 1.5;">Unable to submit directly right now. You can email us directly at <a href="mailto:karansin8672@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(message) + '" style="color: var(--lime); font-weight: 700;">karansin8672@gmail.com</a>.</div>';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send Message →";
+        }
+      });
+    }
+  </script>
 </body>
 </html>

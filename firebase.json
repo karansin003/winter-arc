@@ -49,6 +49,14 @@
           "destination": "/guide.html"
         },
         {
+          "source": "/winter-arc-plan",
+          "destination": "/winter-arc-plan.html"
+        },
+        {
+          "source": "/habit-tracking-guide",
+          "destination": "/habit-tracking-guide.html"
+        },
+        {
           "source": "/about",
           "destination": "/about.html"
         },
@@ -126,6 +134,14 @@
         {
           "source": "/guide",
           "destination": "/guide.html"
+        },
+        {
+          "source": "/winter-arc-plan",
+          "destination": "/winter-arc-plan.html"
+        },
+        {
+          "source": "/habit-tracking-guide",
+          "destination": "/habit-tracking-guide.html"
         },
         {
           "source": "/about",

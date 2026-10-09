@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#171a16">
   <meta name="robots" content="noindex, follow">
-  <title>Reset Password · Winter Arc (Ghost Mode)</title>
-  <meta name="description" content="Secure self-service password reset for your Winter Arc Ghost Mode tracker account.">
+  <title>Account Recovery · Winter Arc 2026</title>
+  <meta name="description" content="Reset your Winter Arc password securely.">
   <link rel="canonical" href="https://arc-challenge.web.app/forgot">
 
-  <!-- Favicon & Icons -->
+  <!-- Favicon & Touch Icons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -22,22 +22,18 @@
   <meta property="og:image" content="https://arc-challenge.web.app/screenshot.png">
   <meta name="twitter:card" content="summary_large_image">
 
-  <!-- Google AdSense Code -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6097963574439559"
-     crossorigin="anonymous"></script>
-
   <!-- Typography & CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261001-7">
+  <link rel="stylesheet" href="styles.css?v=20261010-1">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
 
   <main class="frame">
     <!-- Universal Site Header -->
-    <header class="site-header">
+    <header class="site-header" id="global-site-header">
       <a class="site-brand" href="/" aria-label="Winter Arc Home">
         <span class="brand-gem">W</span>
         <div class="brand-text">
@@ -50,53 +46,35 @@
 
       <ul class="site-nav-list" role="navigation" aria-label="Main Navigation">
         <li><a class="nav-link" href="/">Tracker</a></li>
-        <li><a class="nav-link" href="/winter-arc-tracker">Arc Tracker</a></li>
         <li><a class="nav-link" href="/guide">Blueprint Guide</a></li>
+        <li><a class="nav-link" href="/winter-arc-plan">Execution Plan</a></li>
+        <li><a class="nav-link" href="/habit-tracking-guide">Habit Guide</a></li>
         <li><a class="nav-link" href="/about">About</a></li>
         <li><a class="nav-link" href="/faq">FAQ</a></li>
         <li><a class="nav-link" href="/contact">Contact</a></li>
-        <li><a class="nav-cta-btn" href="/">Open App →</a></li>
+        <li><a class="nav-cta-btn" href="/">Open Tracker →</a></li>
       </ul>
     </header>
 
-    <section class="auth-layout" aria-labelledby="recovery-title">
-      <div class="auth-intro">
-        <p class="eyebrow">ACCOUNT RECOVERY <span>·</span> WINTER ARC 2026</p>
-        <h1>RECLAIM<br><em>YOUR</em><br>STREAK.</h1>
-        <p class="intro-copy">No warrior gets left behind. Enter your registered email to receive an official password reset link directly in your inbox.</p>
-        
-        <div class="auth-stamp">
-          <span class="stamp-dot"></span> SECURE FIREBASE RECOVERY <span>·</span> 100% PRIVATE
-        </div>
-      </div>
+    <!-- Recovery View Layout -->
+    <section class="auth-layout" style="min-height: 55vh; align-items: center; justify-content: center; display: flex;">
+      <div style="max-width: 440px; width: 100%; margin: 20px auto;">
+        <form id="forgot-form" class="auth-panel" style="width: 100%; box-sizing: border-box;">
+          <p class="eyebrow" style="color: var(--lime); font-size: 11px;">CREDENTIAL RESTORATION</p>
+          <h1 style="font-size: 26px; margin: 4px 0 10px; color: var(--paper);">Account Recovery</h1>
+          <p class="muted" style="margin-bottom: 20px; font-size: 13px; line-height: 1.5;">Enter your registered email address. We will dispatch an official reset link to restore your tracker access.</p>
 
-      <div class="auth-panel">
-        <p class="eyebrow">CREDENTIAL RESET</p>
-        <h2 id="recovery-title">Reset Password</h2>
-        <p class="muted" id="recovery-desc">Enter your email and we'll send you an encrypted recovery link.</p>
-
-        <form id="recovery-form" novalidate>
-          <div id="input-group">
-            <label for="recovery-email">Your Account Email *</label>
-            <input 
-              id="recovery-email" 
-              name="email" 
-              type="email" 
-              autocomplete="email" 
-              placeholder="you@example.com" 
-              required 
-              autofocus
-            >
-          </div>
+          <label for="recovery-email">Account Email</label>
+          <input id="recovery-email" name="email" type="email" autocomplete="email" placeholder="warrior@example.com" required style="margin-bottom: 16px;">
 
           <div id="recovery-alert" class="recovery-box" hidden></div>
 
-          <button class="button button-primary auth-submit" type="submit" id="recovery-submit-btn">
-            <span id="btn-text">Send Reset Link</span> <span aria-hidden="true">↗</span>
+          <button class="button button-primary" type="submit" id="recovery-submit" style="width: 100%; padding: 13px; font-size: 14px; margin-top: 6px;">
+            Send Password Reset Link →
           </button>
 
-          <div class="auth-links" style="margin-top: 20px; justify-content: space-between;">
-            <a href="/" class="text-button" style="display: inline-flex; align-items: center; gap: 6px;">
+          <div class="auth-links" style="margin-top: 20px; justify-content: space-between; align-items: center;">
+            <a href="/" class="text-button" style="display: inline-flex; align-items: center; gap: 4px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               Back to Login
             </a>
@@ -120,19 +98,17 @@
           <p>92 days of uninterrupted discipline, private daily tracking, and relentless self-mastery from October 1 to December 31.</p>
           <div class="footer-badges">
             <span class="badge-sub">Private by Design</span>
-            <span class="badge-sub">Cloud Encrypted</span>
-            <span class="badge-sub">AdSense Compliant</span>
+            <span class="badge-sub">Zero Paywalls</span>
+            <span class="badge-sub">Free 92-Day Tracker</span>
           </div>
         </div>
 
         <div>
           <h4 class="footer-heading">Platform</h4>
           <ul class="footer-links-list">
-            <li><a href="/winter-arc-tracker">Winter Arc Tracker 2026</a></li>
             <li><a href="/">Interactive Tracker</a></li>
-            <li><a href="/">92-Day Grid</a></li>
-            <li><a href="/">Habit Builder</a></li>
-            <li><a href="/">Daily Journal</a></li>
+            <li><a href="/winter-arc-plan">92-Day Execution Plan</a></li>
+            <li><a href="/habit-tracking-guide">Habit Tracking Guide</a></li>
             <li><a href="/forgot">Account Recovery</a></li>
           </ul>
         </div>
@@ -140,19 +116,19 @@
         <div>
           <h4 class="footer-heading">Resources</h4>
           <ul class="footer-links-list">
-            <li><a href="/guide">The 92-Day Blueprint</a></li>
-            <li><a href="/about">About Ghost Mode</a></li>
+            <li><a href="/guide">Blueprint Guide</a></li>
+            <li><a href="/about">About Winter Arc</a></li>
             <li><a href="/faq">Frequently Asked Questions</a></li>
-            <li><a href="/contact">Contact & Support</a></li>
+            <li><a href="/contact">Contact &amp; Support</a></li>
           </ul>
         </div>
 
         <div>
-          <h4 class="footer-heading">Legal & Compliance</h4>
+          <h4 class="footer-heading">Legal &amp; Compliance</h4>
           <ul class="footer-links-list">
             <li><a href="/privacy">Privacy Policy</a></li>
             <li><a href="/terms">Terms of Service</a></li>
-            <li><a href="/disclaimer">Health & Fitness Disclaimer</a></li>
+            <li><a href="/disclaimer">Health &amp; Fitness Disclaimer</a></li>
             <li><a href="/ads.txt">ads.txt Verification</a></li>
           </ul>
         </div>
