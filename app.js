@@ -1875,24 +1875,23 @@ if (!firebaseReady()) {
 
     user = currentUser;
     if (!user) {
-      const explicitSignout = localStorage.getItem("winter_arc_explicit_signout") === "true";
-      const hasSession = localStorage.getItem(SESSION_FLAG);
-      if (explicitSignout || !hasSession) {
-        if (unsubscribeState) unsubscribeState();
-        if (unsubscribeProfile) unsubscribeProfile();
-        unsubscribeState = null;
-        unsubscribeProfile = null;
-        window.clearTimeout(saveTimer);
-        state = initialState();
-        userProfile = null;
-        authMode = "signin";
-        updateAuthMode();
-        document.documentElement.classList.remove("has-active-session");
-        document.body.classList.remove("user-authenticated");
-        if (globalSiteHeader) globalSiteHeader.hidden = false;
-        if (appView) appView.hidden = true;
-        if (authView) authView.hidden = false;
-      }
+      localStorage.removeItem(SESSION_FLAG);
+      if (unsubscribeState) unsubscribeState();
+      if (unsubscribeProfile) unsubscribeProfile();
+      unsubscribeState = null;
+      unsubscribeProfile = null;
+      window.clearTimeout(saveTimer);
+      state = initialState();
+      userProfile = null;
+      authMode = "signin";
+      updateAuthMode();
+      document.documentElement.classList.remove("has-active-session");
+      document.body.classList.remove("user-authenticated");
+      if (globalSiteHeader) globalSiteHeader.hidden = false;
+      if (appView) appView.hidden = true;
+      if (authView) authView.hidden = false;
+      if (authForm) authForm.hidden = false;
+      if (verificationPanel) verificationPanel.hidden = true;
       return;
     }
 
