@@ -79,7 +79,7 @@ let verifyCooldownTimer = null;
 function showVerificationScreen(email, keepFeedback = false) {
   if (authForm) authForm.hidden = true;
   if (verificationPanel) verificationPanel.hidden = false;
-  if (verifyUserEmail) verifyUserEmail.textContent = email || auth?.currentUser?.email || "your email";
+  if (verifyUserEmail) verifyUserEmail.textContent = email || auth?.currentUser?.email || "";
   if (!keepFeedback && verifyFeedback) verifyFeedback.hidden = true;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -355,8 +355,14 @@ function initSessionRestore() {
     document.documentElement.classList.add("has-active-session");
     document.body.classList.add("user-authenticated");
     if (globalSiteHeader) globalSiteHeader.hidden = true;
-    if (authView) authView.hidden = true;
-    if (appView) appView.hidden = false;
+    if (authView) {
+      authView.hidden = true;
+      authView.style.display = "none";
+    }
+    if (appView) {
+      appView.hidden = false;
+      appView.style.display = "";
+    }
     try {
       const cachedData = localStorage.getItem(`winter-arc:${cachedUid}`);
       if (cachedData) {
@@ -1863,8 +1869,14 @@ if (!firebaseReady()) {
         document.documentElement.classList.remove("has-active-session");
         document.body.classList.remove("user-authenticated");
         if (globalSiteHeader) globalSiteHeader.hidden = false;
-        if (appView) appView.hidden = true;
-        if (authView) authView.hidden = false;
+        if (appView) {
+          appView.hidden = true;
+          appView.style.display = "none";
+        }
+        if (authView) {
+          authView.hidden = false;
+          authView.style.display = "";
+        }
         if (!verificationPanel || verificationPanel.hidden) {
           showVerificationScreen(currentUser.email);
           showVerifyFeedback("warning", "Please check your inbox or spam folder and verify your email to access your tracker.");
@@ -1875,23 +1887,26 @@ if (!firebaseReady()) {
 
     user = currentUser;
     if (!user) {
-      const explicitSignout = localStorage.getItem("winter_arc_explicit_signout") === "true";
-      const hasSession = localStorage.getItem(SESSION_FLAG);
-      if (explicitSignout || !hasSession) {
-        if (unsubscribeState) unsubscribeState();
-        if (unsubscribeProfile) unsubscribeProfile();
-        unsubscribeState = null;
-        unsubscribeProfile = null;
-        window.clearTimeout(saveTimer);
-        state = initialState();
-        userProfile = null;
-        authMode = "signin";
-        updateAuthMode();
-        document.documentElement.classList.remove("has-active-session");
-        document.body.classList.remove("user-authenticated");
-        if (globalSiteHeader) globalSiteHeader.hidden = false;
+      localStorage.removeItem(SESSION_FLAG);
+      if (unsubscribeState) unsubscribeState();
+      if (unsubscribeProfile) unsubscribeProfile();
+      unsubscribeState = null;
+      unsubscribeProfile = null;
+      window.clearTimeout(saveTimer);
+      state = initialState();
+      userProfile = null;
+      authMode = "signin";
+      updateAuthMode();
+      document.documentElement.classList.remove("has-active-session");
+      document.body.classList.remove("user-authenticated");
+      if (globalSiteHeader) globalSiteHeader.hidden = false;
+      if (appView) {
         appView.hidden = true;
+        appView.style.display = "none";
+      }
+      if (authView) {
         authView.hidden = false;
+        authView.style.display = "";
       }
       return;
     }
@@ -1901,8 +1916,14 @@ if (!firebaseReady()) {
     document.documentElement.classList.add("has-active-session");
     document.body.classList.add("user-authenticated");
     if (globalSiteHeader) globalSiteHeader.hidden = true;
-    authView.hidden = true;
-    appView.hidden = false;
+    if (authView) {
+      authView.hidden = true;
+      authView.style.display = "none";
+    }
+    if (appView) {
+      appView.hidden = false;
+      appView.style.display = "";
+    }
     selectedDate = currentActiveDay();
     activeTab = "today";
     startUserData(user);

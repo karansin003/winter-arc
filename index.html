@@ -225,7 +225,7 @@
           <div class="verification-mail-icon">✉️</div>
           <div>
             <span class="verification-label">VERIFICATION SENT TO:</span>
-            <div id="verify-user-email" class="verification-email-text">user@example.com</div>
+            <div id="verify-user-email" class="verification-email-text"></div>
           </div>
         </div>
 
@@ -386,7 +386,7 @@
     </section>
 
     <!-- Authenticated App View (Working Tracker Dashboard) -->
-    <section id="app-view" class="app-view" hidden>
+    <section id="app-view" class="app-view" hidden style="display: none;">
       <header class="topbar">
         <a class="wordmark" href="#today" aria-label="Winter Arc home">
           <span class="brand-mark">W</span>
@@ -423,7 +423,7 @@
             aria-haspopup="dialog" title="View profile and account">
             <span class="avatar-badge" id="top-avatar">?</span>
             <div class="profile-preview-text">
-              <span id="account-email" class="account-email">Signed in</span>
+              <span id="account-email" class="account-email">Account</span>
               <span class="profile-status-sub"><span class="status-indicator"></span>Ghost Mode</span>
             </div>
             <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -489,7 +489,7 @@
           <div class="dialog-header">
             <div>
               <p class="eyebrow">YOUR PROFILE</p>
-              <h3 id="dialog-profile-title">Warrior Details</h3>
+              <h3 id="dialog-profile-title">Account Details</h3>
             </div>
             <button type="button" class="dialog-close" id="profile-close-btn" aria-label="Close profile">✕</button>
           </div>
@@ -497,23 +497,23 @@
           <div class="dialog-user-badge">
             <div class="avatar-large" id="profile-avatar-large">?</div>
             <div class="dialog-user-info">
-              <strong id="profile-header-name" class="dialog-user-name">Warrior</strong>
-              <span id="profile-header-email" class="dialog-user-email">user@example.com</span>
+              <strong id="profile-header-name" class="dialog-user-name">Account</strong>
+              <span id="profile-header-email" class="dialog-user-email"></span>
               <span class="badge-ghost"><span class="status-indicator"></span>OCT 01 — DEC 31 · GHOST MODE</span>
             </div>
           </div>
 
           <div class="profile-stats-grid">
             <div class="stat-box">
-              <span class="stat-num" id="profile-stat-streak">0 🔥</span>
+              <span class="stat-num" id="profile-stat-streak">—</span>
               <span class="stat-lbl">CURRENT STREAK</span>
             </div>
             <div class="stat-box">
-              <span class="stat-num" id="profile-stat-perfect">0</span>
+              <span class="stat-num" id="profile-stat-perfect">—</span>
               <span class="stat-lbl">PERFECT DAYS</span>
             </div>
             <div class="stat-box">
-              <span class="stat-num" id="profile-stat-pct">0%</span>
+              <span class="stat-num" id="profile-stat-pct">—</span>
               <span class="stat-lbl">ARC PROGRESS</span>
             </div>
           </div>
