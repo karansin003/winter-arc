@@ -355,14 +355,8 @@ function initSessionRestore() {
     document.documentElement.classList.add("has-active-session");
     document.body.classList.add("user-authenticated");
     if (globalSiteHeader) globalSiteHeader.hidden = true;
-    if (authView) {
-      authView.hidden = true;
-      authView.style.display = "none";
-    }
-    if (appView) {
-      appView.hidden = false;
-      appView.style.display = "";
-    }
+    if (authView) authView.hidden = true;
+    if (appView) appView.hidden = false;
     try {
       const cachedData = localStorage.getItem(`winter-arc:${cachedUid}`);
       if (cachedData) {
@@ -1869,14 +1863,8 @@ if (!firebaseReady()) {
         document.documentElement.classList.remove("has-active-session");
         document.body.classList.remove("user-authenticated");
         if (globalSiteHeader) globalSiteHeader.hidden = false;
-        if (appView) {
-          appView.hidden = true;
-          appView.style.display = "none";
-        }
-        if (authView) {
-          authView.hidden = false;
-          authView.style.display = "";
-        }
+        if (appView) appView.hidden = true;
+        if (authView) authView.hidden = false;
         if (!verificationPanel || verificationPanel.hidden) {
           showVerificationScreen(currentUser.email);
           showVerifyFeedback("warning", "Please check your inbox or spam folder and verify your email to access your tracker.");
@@ -1887,26 +1875,23 @@ if (!firebaseReady()) {
 
     user = currentUser;
     if (!user) {
-      localStorage.removeItem(SESSION_FLAG);
-      if (unsubscribeState) unsubscribeState();
-      if (unsubscribeProfile) unsubscribeProfile();
-      unsubscribeState = null;
-      unsubscribeProfile = null;
-      window.clearTimeout(saveTimer);
-      state = initialState();
-      userProfile = null;
-      authMode = "signin";
-      updateAuthMode();
-      document.documentElement.classList.remove("has-active-session");
-      document.body.classList.remove("user-authenticated");
-      if (globalSiteHeader) globalSiteHeader.hidden = false;
-      if (appView) {
-        appView.hidden = true;
-        appView.style.display = "none";
-      }
-      if (authView) {
-        authView.hidden = false;
-        authView.style.display = "";
+      const explicitSignout = localStorage.getItem("winter_arc_explicit_signout") === "true";
+      const hasSession = localStorage.getItem(SESSION_FLAG);
+      if (explicitSignout || !hasSession) {
+        if (unsubscribeState) unsubscribeState();
+        if (unsubscribeProfile) unsubscribeProfile();
+        unsubscribeState = null;
+        unsubscribeProfile = null;
+        window.clearTimeout(saveTimer);
+        state = initialState();
+        userProfile = null;
+        authMode = "signin";
+        updateAuthMode();
+        document.documentElement.classList.remove("has-active-session");
+        document.body.classList.remove("user-authenticated");
+        if (globalSiteHeader) globalSiteHeader.hidden = false;
+        if (appView) appView.hidden = true;
+        if (authView) authView.hidden = false;
       }
       return;
     }
@@ -1916,14 +1901,8 @@ if (!firebaseReady()) {
     document.documentElement.classList.add("has-active-session");
     document.body.classList.add("user-authenticated");
     if (globalSiteHeader) globalSiteHeader.hidden = true;
-    if (authView) {
-      authView.hidden = true;
-      authView.style.display = "none";
-    }
-    if (appView) {
-      appView.hidden = false;
-      appView.style.display = "";
-    }
+    if (authView) authView.hidden = true;
+    if (appView) appView.hidden = false;
     selectedDate = currentActiveDay();
     activeTab = "today";
     startUserData(user);
