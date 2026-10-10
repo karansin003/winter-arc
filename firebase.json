@@ -7,6 +7,7 @@
       "site": "arc-challenge",
       "public": ".",
       "cleanUrls": true,
+      "trailingSlash": false,
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -16,6 +17,40 @@
         "public/**"
       ],
       "headers": [
+        {
+          "source": "/sitemap.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "all"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/robots.txt",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain; charset=utf-8"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "all"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, must-revalidate"
+            }
+          ]
+        },
         {
           "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|ico)",
           "headers": [
@@ -33,6 +68,13 @@
               "value": "no-cache, must-revalidate"
             }
           ]
+        }
+      ],
+      "redirects": [
+        {
+          "source": "/sitemap",
+          "destination": "/sitemap.xml",
+          "type": 301
         }
       ],
       "rewrites": [
@@ -83,6 +125,10 @@
         {
           "source": "/terms",
           "destination": "/terms.html"
+        },
+        {
+          "source": "/sitemap.xml",
+          "destination": "/sitemap.xml"
         },
         {
           "source": "**",
@@ -94,6 +140,7 @@
       "site": "winter-arc-b7f5f",
       "public": ".",
       "cleanUrls": true,
+      "trailingSlash": false,
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -103,6 +150,40 @@
         "public/**"
       ],
       "headers": [
+        {
+          "source": "/sitemap.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "all"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/robots.txt",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain; charset=utf-8"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "all"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, must-revalidate"
+            }
+          ]
+        },
         {
           "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|ico)",
           "headers": [
@@ -120,6 +201,13 @@
               "value": "no-cache, must-revalidate"
             }
           ]
+        }
+      ],
+      "redirects": [
+        {
+          "source": "/sitemap",
+          "destination": "/sitemap.xml",
+          "type": 301
         }
       ],
       "rewrites": [
@@ -170,6 +258,10 @@
         {
           "source": "/terms",
           "destination": "/terms.html"
+        },
+        {
+          "source": "/sitemap.xml",
+          "destination": "/sitemap.xml"
         },
         {
           "source": "**",
